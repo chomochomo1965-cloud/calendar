@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（自由入力一覧版）</title>
+<title>メモカレンダー（〇付き・空白非表示・入力可能版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -31,7 +31,7 @@ h4 { margin:10px 0 5px 0; }
 /* 横並び用 */
 .lineContainer { display: flex; gap: 10px; margin-bottom: 5px; }
 
-/* 保存メモ一覧の行間を狭く */
+/* 保存メモ一覧の行間を狭くする */
 #memoListAlways p { margin: 2px 0; line-height: 1.2; }
 #memoListAlways strong { display:block; margin-bottom: 2px; }
 </style>
@@ -155,7 +155,11 @@ function generateCalendar(year,month){
       const saved=JSON.parse(localStorage.getItem(selectedDateStr)||'{}');
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
 
-      memoSets.forEach(div=>{ div.style.display='block'; }); // 常に入力可能
+      // 予定1～4は常に表示（新規入力可能）
+      memoSets.forEach((div,i)=>{
+        div.style.display='block';
+      });
+
       document.getElementById('line5').value=saved.line5||'';
       memoModal.style.display='flex';
     });
@@ -203,23 +207,38 @@ function updateMemoListAlways(){
     const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
     const weekday=getWeekday(y,m-1,d);
 
-    // 自由入力 line5 が空の場合は無視
-    if(!val.line5 || val.line5.trim()==='') return;
-
     const div=document.createElement('div');
     const header=document.createElement('strong');
     header.textContent = `${m}/${d}(${weekday})`;
     div.appendChild(header);
 
-    const pFree=document.createElement('p');
-    pFree.textContent = val.line5;
-    div.appendChild(pFree);
+    for(let i=1;i<=4;i++){
+      const c=val[`line${i}-1`]||'';
+      const e=val[`line${i}-2`]||'';
+      const b=val[`line${i}-3`]||'';
+      if(!c && !e && !b) continue; // すべて空ならスキップ
+
+      const pName=document.createElement('p');
+      pName.textContent=`予定${i}`;
+      div.appendChild(pName);
+
+      const pContent=document.createElement('p');
+      pContent.textContent=`〇${c}　${e}　${b}`;
+      div.appendChild(pContent);
+    }
+
+    if(val.line5){
+      const pFree=document.createElement('p');
+      pFree.textContent = val.line5;
+      div.appendChild(pFree);
+    }
 
     const delBtn=document.createElement('button');
     delBtn.textContent='削除';
     delBtn.className='deleteBtn';
     delBtn.addEventListener('click',()=>{
-      localStorage.removeItem(key);
+      const correctKey = `memo-${pad2(y)}-${pad2(m)}-${pad2(d)}`;
+      localStorage.removeItem(correctKey);
       updateMemoListAlways();
       generateCalendar(currentYear,currentMonth);
     });
