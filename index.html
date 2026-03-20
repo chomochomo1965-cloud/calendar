@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（赤マーク削除対応 完全版）</title>
+<title>メモカレンダー（赤マーク＆予定表示 完全版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -122,11 +122,11 @@ function generateCalendar(year,month){
     if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()) cell.classList.add('today');
 
     const dateStr=`${year}-${pad2(month+1)}-${pad2(day)}`;
+    const correctKey = `memo-${pad2(year)}-${pad2(month+1)}-${pad2(day)}`;
 
     // 赤マーク削除＆再生成
     const existingMark = cell.querySelector('.memo-mark');
     if(existingMark) existingMark.remove();
-    const correctKey = `memo-${pad2(year)}-${pad2(month+1)}-${pad2(day)}`;
     if(localStorage.getItem(correctKey)){
       const mark = document.createElement('span');
       mark.textContent='●';
@@ -142,13 +142,14 @@ function generateCalendar(year,month){
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
       document.getElementById('line5').value=saved.line5||'';
 
+      // 予定セット表示：保存データがある場合は必ず表示
       memoSets.forEach((div,i)=>{
-        const savedExist = Object.keys(saved).length > 0;
         const c=saved[`line${i+1}-1`]||'';
         const e=saved[`line${i+1}-2`]||'';
         const b=saved[`line${i+1}-3`]||'';
-        div.style.display = savedExist ? ((c||e||b) ? 'block' : 'none') : 'block';
+        div.style.display = (c || e || b || Object.keys(saved).length === 0) ? 'block' : 'none';
       });
+
       memoModal.style.display='flex';
     });
     row.appendChild(cell);
@@ -166,7 +167,7 @@ memoPresetLines.forEach(sel=>{
   sel.addEventListener('change',()=>{ document.getElementById(sel.dataset.target).value=sel.value; });
 });
 
-// 保存ボタン 修正版
+// 保存ボタン
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={};
   memoPresetLines.forEach(sel=>obj[sel.dataset.target]=sel.value);
