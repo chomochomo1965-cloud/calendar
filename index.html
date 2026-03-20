@@ -3,44 +3,32 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（完全版）</title>
+<title>メモカレンダー</title>
 
 <style>
-body { font-family:sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
-
-h2 { font-size:24px; margin-bottom:10px; }
-
+body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
-th, td {
-  border:1px solid #ccc;
-  width:45px; height:45px;
-  text-align:center;
-  cursor:pointer;
-  position:relative;
-}
+th, td { border:1px solid #ccc; width:40px; height:40px; text-align:center; cursor:pointer; position:relative; }
 th { background:#4CAF50; color:#fff; }
 td:hover { background:#d4f0d4; }
 
 .memo-mark {
   position:absolute;
-  bottom:2px; right:2px;
+  bottom:2px;
+  right:2px;
   color:red;
   font-weight:bold;
 }
 
-/* ナビボタン */
-#navButtons button{
-  padding:12px 20px;
-  font-size:20px;
+/* ナビ */
+#navButtons button {
   margin:0 10px;
-  border:none;
-  border-radius:8px;
-  background:#2196F3;
-  color:#fff;
+  padding:5px 10px;
+  font-size:16px;
 }
 
 /* モーダル */
-.modal{
+.modal {
   display:none;
   position:fixed;
   width:100%; height:100%;
@@ -48,62 +36,48 @@ td:hover { background:#d4f0d4; }
   justify-content:center;
   align-items:center;
 }
-.modal-content{
+.modal-content {
   background:#fff;
   padding:20px;
+  border-radius:10px;
   width:90%;
   max-width:450px;
-  border-radius:10px;
   text-align:left;
 }
 
-.lineContainer{
-  display:flex;
-  gap:10px;
-}
+/* 横並び */
+.lineContainer { display:flex; gap:10px; }
 
-select, textarea{
+select, textarea {
   width:100%;
   font-size:16px;
   margin-bottom:10px;
 }
+textarea { height:50px; }
 
-textarea{ height:60px; }
-
-/* 保存メモ一覧 */
-#memoListAlways{
-  max-width:600px;
-  margin:auto;
+/* 保存一覧 */
+#memoListAlways {
   margin-top:20px;
+  max-width:600px;
+  margin-left:auto;
+  margin-right:auto;
   text-align:left;
-  font-size:18px;
 }
 
-#memoListAlways div{
-  border-bottom:1px solid #ccc;
+#memoListAlways div {
   padding:5px;
+  border-bottom:1px solid #ccc;
   display:flex;
   flex-direction:column;
 }
 
-#memoListAlways p{
-  margin:0;
-  line-height:1.4;
+#memoListAlways p {
+  margin:2px 0;
 }
 
-#memoListAlways strong{
-  font-size:20px;
-}
-
-/* 削除ボタン */
-.deleteBtn{
-  background:#f44336;
-  color:#fff;
-  border:none;
-  border-radius:8px;
-  padding:10px;
-  font-size:18px;
+.deleteBtn {
   align-self:flex-end;
+  margin-top:5px;
 }
 </style>
 </head>
@@ -135,30 +109,30 @@ textarea{ height:60px; }
 <div>
 <h4>予定1</h4>
 <div class="lineContainer">
-<select data-key="line1-1"><option></option><option>A</option><option>B</option></select>
-<select data-key="line1-2"><option></option><option>A</option><option>B</option></select>
-<select data-key="line1-3"><option></option><option>A</option><option>B</option></select>
+<select class="memo" data-key="line1-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line1-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line1-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
 </div>
 
 <h4>予定2</h4>
 <div class="lineContainer">
-<select data-key="line2-1"><option></option><option>A</option><option>B</option></select>
-<select data-key="line2-2"><option></option><option>A</option><option>B</option></select>
-<select data-key="line2-3"><option></option><option>A</option><option>B</option></select>
+<select class="memo" data-key="line2-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line2-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line2-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
 </div>
 
 <h4>予定3</h4>
 <div class="lineContainer">
-<select data-key="line3-1"><option></option><option>A</option><option>B</option></select>
-<select data-key="line3-2"><option></option><option>A</option><option>B</option></select>
-<select data-key="line3-3"><option></option><option>A</option><option>B</option></select>
+<select class="memo" data-key="line3-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line3-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line3-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
 </div>
 
 <h4>予定4</h4>
 <div class="lineContainer">
-<select data-key="line4-1"><option></option><option>A</option><option>B</option></select>
-<select data-key="line4-2"><option></option><option>A</option><option>B</option></select>
-<select data-key="line4-3"><option></option><option>A</option><option>B</option></select>
+<select class="memo" data-key="line4-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line4-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
+<select class="memo" data-key="line4-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
 </div>
 </div>
 
@@ -174,58 +148,59 @@ textarea{ height:60px; }
 <div id="memoListAlways"></div>
 
 <script>
-const selects=document.querySelectorAll('select');
-
-function pad2(n){return n.toString().padStart(2,'0');}
+const calendarBody=document.getElementById('calendarBody');
+const memoModal=document.getElementById('memoModal');
+const memoDateTitle=document.getElementById('memoDateTitle');
+const memoListAlways=document.getElementById('memoListAlways');
+const selects=document.querySelectorAll('.memo');
 
 let y=new Date().getFullYear();
 let m=new Date().getMonth();
-let key="";
+let selectedKey='';
 
-function draw(){
-const body=document.getElementById('calendarBody');
-body.innerHTML="";
+function pad2(n){return n.toString().padStart(2,'0');}
+
+function generateCalendar(){
+calendarBody.innerHTML='';
 const first=new Date(y,m,1);
-
+const last=new Date(y,m+1,0);
 let row=document.createElement('tr');
 
 for(let i=0;i<first.getDay();i++) row.appendChild(document.createElement('td'));
 
-for(let d=1;d<=new Date(y,m+1,0).getDate();d++){
-if(row.children.length===7){body.appendChild(row);row=document.createElement('tr');}
+for(let d=1;d<=last.getDate();d++){
+if(row.children.length===7){calendarBody.appendChild(row);row=document.createElement('tr');}
 
 const td=document.createElement('td');
 td.textContent=d;
 
-const k=`memo-${pad2(y)}-${pad2(m+1)}-${pad2(d)}`;
+const key=`memo-${pad2(y)}-${pad2(m+1)}-${pad2(d)}`;
 
-if(localStorage.getItem(k)){
+if(localStorage.getItem(key)){
 const mark=document.createElement('span');
-mark.textContent="●";
-mark.className="memo-mark";
+mark.textContent='●';
+mark.className='memo-mark';
 td.appendChild(mark);
 }
 
 td.onclick=()=>{
-key=k;
-document.getElementById('memoDateTitle').textContent=`${m+1}/${d}`;
-const data=JSON.parse(localStorage.getItem(k)||'{}');
+selectedKey=key;
+memoDateTitle.textContent=`${m+1}/${d}`;
+const data=JSON.parse(localStorage.getItem(key)||'{}');
 
-selects.forEach(s=>s.value=data[s.dataset.key]||"");
-document.getElementById('line5').value=data.line5||"";
+selects.forEach(s=>s.value=data[s.dataset.key]||'');
+document.getElementById('line5').value=data.line5||'';
 
-document.getElementById('memoModal').style.display="flex";
+memoModal.style.display='flex';
 };
 
 row.appendChild(td);
 }
+calendarBody.appendChild(row);
 
-body.appendChild(row);
-
-/* タイトル */
 document.getElementById('monthYear').textContent=`${y}年 ${m+1}月`;
 
-list();
+updateList();
 }
 
 document.getElementById('saveMemo').onclick=()=>{
@@ -234,32 +209,29 @@ selects.forEach(s=>obj[s.dataset.key]=s.value);
 obj.line5=document.getElementById('line5').value;
 
 if(Object.values(obj).some(v=>v)){
-localStorage.setItem(key,JSON.stringify(obj));
+localStorage.setItem(selectedKey,JSON.stringify(obj));
 }else{
-localStorage.removeItem(key);
+localStorage.removeItem(selectedKey);
 }
 
-document.getElementById('memoModal').style.display="none";
-draw();
+memoModal.style.display='none';
+generateCalendar();
 };
 
-document.getElementById('closeMemo').onclick=()=>{
-document.getElementById('memoModal').style.display="none";
-};
+document.getElementById('closeMemo').onclick=()=>memoModal.style.display='none';
 
-document.getElementById('prevMonth').onclick=()=>{m--;if(m<0){m=11;y--;}draw();}
-document.getElementById('nextMonth').onclick=()=>{m++;if(m>11){m=0;y++;}draw();}
+document.getElementById('prevMonth').onclick=()=>{m--;if(m<0){m=11;y--;}generateCalendar();}
+document.getElementById('nextMonth').onclick=()=>{m++;if(m>11){m=0;y++;}generateCalendar();}
 
-function list(){
-const box=document.getElementById('memoListAlways');
-box.innerHTML="";
+function updateList(){
+memoListAlways.innerHTML='';
 
-Object.keys(localStorage).filter(k=>k.startsWith("memo-")).sort().forEach(k=>{
+Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort().forEach(k=>{
 const v=JSON.parse(localStorage.getItem(k));
 const div=document.createElement('div');
 
 const h=document.createElement('strong');
-h.textContent=k.replace("memo-","");
+h.textContent=k.replace('memo-','');
 div.appendChild(h);
 
 for(let i=1;i<=4;i++){
@@ -275,21 +247,21 @@ div.appendChild(p);
 
 if(v.line5){
 const p=document.createElement('p');
-p.innerHTML=v.line5.replace(/\r\n|\r|\n/g,"<br>");
+p.textContent=v.line5;
 div.appendChild(p);
 }
 
 const btn=document.createElement('button');
-btn.textContent="削除";
-btn.className="deleteBtn";
-btn.onclick=()=>{localStorage.removeItem(k);draw();};
+btn.textContent='削除';
+btn.className='deleteBtn';
+btn.onclick=()=>{localStorage.removeItem(k);generateCalendar();};
 
 div.appendChild(btn);
-box.appendChild(div);
+memoListAlways.appendChild(div);
 });
 }
 
-draw();
+generateCalendar();
 </script>
 
 </body>
