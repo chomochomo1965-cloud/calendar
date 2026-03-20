@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（常時一覧表示 修正版）</title>
+<title>メモカレンダー（選択リスト＋自由入力1行版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -13,7 +13,6 @@ td:hover { background:#d4f0d4; }
 .today { background:#FFEB3B; }
 .memo-mark { position:absolute; bottom:2px; right:2px; font-size:16px; color:red; font-weight:bold; }
 
-/* モーダル共通 */
 .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
 .modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:450px; text-align:left; max-height:90%; overflow-y:auto; }
 .modal-content textarea, .modal-content select { width:100%; font-size:16px; margin-top:5px; margin-bottom:10px; }
@@ -58,7 +57,6 @@ td:hover { background:#d4f0d4; }
       <option value="G">G</option><option value="H">H</option><option value="I">I</option>
       <option value="J">J</option>
     </select>
-    <textarea id="line1" placeholder="自由入力不可"></textarea>
 
     <label>行事リスト:</label>
     <select class="memoPresetLine" data-target="line2">
@@ -68,7 +66,6 @@ td:hover { background:#d4f0d4; }
       <option value="G">G</option><option value="H">H</option><option value="I">I</option>
       <option value="J">J</option>
     </select>
-    <textarea id="line2" placeholder="自由入力不可"></textarea>
 
     <label>備考リスト:</label>
     <select class="memoPresetLine" data-target="line3">
@@ -78,7 +75,6 @@ td:hover { background:#d4f0d4; }
       <option value="G">G</option><option value="H">H</option><option value="I">I</option>
       <option value="J">J</option>
     </select>
-    <textarea id="line3" placeholder="自由入力不可"></textarea>
 
     <label>自由入力:</label>
     <textarea id="line4" placeholder="ここは自由入力可能"></textarea>
@@ -90,7 +86,6 @@ td:hover { background:#d4f0d4; }
   </div>
 </div>
 
-<!-- 常時表示メモ一覧 -->
 <h3>保存メモ一覧</h3>
 <div id="memoListAlways"></div>
 
@@ -140,9 +135,7 @@ function generateCalendar(year,month){
       const weekday=getWeekday(year,month,day);
       memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
       const saved=JSON.parse(localStorage.getItem('memo-'+dateStr) || '{}');
-      document.getElementById('line1').value=saved.line1 || '';
-      document.getElementById('line2').value=saved.line2 || '';
-      document.getElementById('line3').value=saved.line3 || '';
+      // line1～line3は選択リストで管理、テキスト欄なし
       document.getElementById('line4').value=saved.line4 || '';
       memoPresetLines.forEach(sel=>sel.value='');
       memoModal.style.display='flex';
@@ -159,22 +152,23 @@ function generateCalendar(year,month){
   updateMemoListAlways();
 }
 
-// プルダウン選択で対応テキスト欄に反映（line1～line3のみ）
+// 選択リストの値を保存
 memoPresetLines.forEach(sel=>{
   sel.addEventListener('change',()=>{
     const targetId = sel.dataset.target;
     if(targetId !== 'line4'){ 
-      document.getElementById(targetId).value = sel.value || '';
+      // 選択リスト値は line1～line3 に保存
+      localStorage.setItem(targetId, sel.value || '');
     }
   });
 });
 
-// 保存
+// 保存ボタン
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={
-    line1: document.getElementById('line1').value,
-    line2: document.getElementById('line2').value,
-    line3: document.getElementById('line3').value,
+    line1: localStorage.getItem('line1') || '',
+    line2: localStorage.getItem('line2') || '',
+    line3: localStorage.getItem('line3') || '',
     line4: document.getElementById('line4').value
   };
   if(obj.line1 || obj.line2 || obj.line3 || obj.line4){
@@ -182,6 +176,11 @@ document.getElementById('saveMemo').addEventListener('click',()=>{
   } else {
     localStorage.removeItem('memo-'+selectedDateStr);
   }
+  // 選択リストの一時保存をクリア
+  localStorage.removeItem('line1');
+  localStorage.removeItem('line2');
+  localStorage.removeItem('line3');
+
   memoModal.style.display='none';
   generateCalendar(currentYear,currentMonth);
 });
@@ -199,7 +198,7 @@ document.getElementById('nextMonth').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-// 常時メモ一覧表示
+// 常時メモ一覧
 function updateMemoListAlways(){
   memoListAlways.innerHTML='';
   const keys = Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
