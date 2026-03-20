@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（モーダル横並び・コンパクト版）</title>
+<title>メモカレンダー（空白非表示・コンパクト版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -35,7 +35,7 @@ h4 { margin:10px 0 5px 0; }
   margin-bottom: 5px;
 }
 
-/* --- 追加：保存メモ一覧の行間を狭くする --- */
+/* 保存メモ一覧の行間を狭くする */
 #memoListAlways p {
   margin: 2px 0;
   line-height: 1.2;
@@ -210,7 +210,7 @@ document.getElementById('nextMonth').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-// --- 保存メモ一覧（縦並び＋行間狭く）
+// --- 保存メモ一覧（空白予定は非表示）
 function updateMemoListAlways(){
   memoListAlways.innerHTML='';
   const keys=Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
@@ -226,9 +226,10 @@ function updateMemoListAlways(){
     div.appendChild(header);
 
     for(let i=1;i<=4;i++){
-      const c=val[`line${i}-1`]||'空白';
-      const e=val[`line${i}-2`]||'空白';
-      const b=val[`line${i}-3`]||'空白';
+      const c=val[`line${i}-1`]||'';
+      const e=val[`line${i}-2`]||'';
+      const b=val[`line${i}-3`]||'';
+      if(!c && !e && !b) continue; // すべて空ならスキップ
 
       const pName=document.createElement('p');
       pName.textContent=`予定${i}`;
