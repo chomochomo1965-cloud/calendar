@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>前月・翌月切替メモカレンダー（曜日付き）</title>
+<title>メモカレンダー（リスト選択付き）</title>
 <style>
 body {
   font-family: sans-serif;
@@ -29,20 +29,11 @@ th {
   background: #4CAF50;
   color: #fff;
 }
-td:hover {
-  background: #d4f0d4;
-}
-.today {
-  background: #FFEB3B;
-}
-.memo-mark {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  font-size: 12px;
-  color: red;
-}
-/* モーダル */
+td:hover { background: #d4f0d4; }
+.today { background: #FFEB3B; }
+.memo-mark { position: absolute; bottom:2px; right:2px; font-size:12px; color:red; }
+
+/* モーダル共通 */
 .modal {
   display: none;
   position: fixed;
@@ -60,11 +51,13 @@ td:hover {
   max-width: 350px;
   text-align:left;
 }
-.modal-content textarea {
+.modal-content textarea, .modal-content select {
   width: 100%;
-  height: 100px;
-  font-size: 16px;
+  font-size:16px;
+  margin-top:5px;
+  margin-bottom:5px;
 }
+.modal-content textarea { height: 100px; }
 .modal-content button {
   margin-top: 10px;
   padding: 8px 12px;
@@ -102,7 +95,15 @@ td:hover {
 <div id="memoModal" class="modal">
   <div class="modal-content">
     <h3 id="memoDateTitle"></h3>
-    <textarea id="memoText"></textarea>
+    <select id="memoPreset">
+      <option value="">リストから選択</option>
+      <option value="買い物">買い物</option>
+      <option value="会議">会議</option>
+      <option value="運動">運動</option>
+      <option value="休暇">休暇</option>
+      <option value="その他">その他</option>
+    </select>
+    <textarea id="memoText" placeholder="自由に入力もできます"></textarea>
     <div style="text-align:right;">
       <button id="saveMemo">保存</button>
       <button id="closeMemo">閉じる</button>
@@ -126,6 +127,7 @@ const calendarBody=document.getElementById('calendarBody');
 const memoModal=document.getElementById('memoModal');
 const memoDateTitle=document.getElementById('memoDateTitle');
 const memoText=document.getElementById('memoText');
+const memoPreset=document.getElementById('memoPreset');
 const memoListModal=document.getElementById('memoListModal');
 const memoList=document.getElementById('memoList');
 
@@ -144,25 +146,15 @@ function generateCalendar(year,month){
   const lastDay=new Date(year,month+1,0);
   const startDay=firstDay.getDay();
   const totalDays=lastDay.getDate();
-
   let row=document.createElement('tr');
-  for(let i=0;i<startDay;i++){
-    row.appendChild(document.createElement('td'));
-  }
+  for(let i=0;i<startDay;i++) row.appendChild(document.createElement('td'));
 
   for(let day=1;day<=totalDays;day++){
-    if(row.children.length===7){
-      calendarBody.appendChild(row);
-      row=document.createElement('tr');
-    }
+    if(row.children.length===7){ calendarBody.appendChild(row); row=document.createElement('tr'); }
     const cell=document.createElement('td');
     cell.textContent=day;
-
-    // 今日ハイライト
     const today=new Date();
-    if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()){
-      cell.classList.add('today');
-    }
+    if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()) cell.classList.add('today');
 
     const dateStr=`${year}-${month+1}-${day}`;
     if(localStorage.getItem('memo-'+dateStr)){
@@ -171,7 +163,7 @@ function generateCalendar(year,month){
       mark.className='memo-mark';
       mark.addEventListener('click',(e)=>{
         e.stopPropagation();
-        showMemoList(dateStr);
+        showMemoList();
       });
       cell.appendChild(mark);
     }
@@ -181,53 +173,56 @@ function generateCalendar(year,month){
       const weekday=getWeekday(year,month,day);
       memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
       memoText.value=localStorage.getItem('memo-'+dateStr) || '';
+      memoPreset.value='';
       memoModal.style.display='flex';
     });
 
     row.appendChild(cell);
   }
-
-  while(row.children.length<7){
-    row.appendChild(document.createElement('td'));
-  }
+  while(row.children.length<7) row.appendChild(document.createElement('td'));
   calendarBody.appendChild(row);
 
   const monthNames=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
   document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
 }
 
-// メモ保存
+// プリセット選択でテキスト反映
+memoPreset.addEventListener('change',()=>{
+  if(memoPreset.value) memoText.value=memoPreset.value;
+});
+
+// 保存
 document.getElementById('saveMemo').addEventListener('click',()=>{
-  localStorage.setItem('memo-'+selectedDateStr, memoText.value);
+  if(memoText.value.trim()!==''){
+    localStorage.setItem('memo-'+selectedDateStr, memoText.value);
+  } else {
+    localStorage.removeItem('memo-'+selectedDateStr);
+  }
   memoModal.style.display='none';
   generateCalendar(currentYear,currentMonth);
 });
 
-// メモ閉じる
-document.getElementById('closeMemo').addEventListener('click',()=>{
-  memoModal.style.display='none';
-});
+// 閉じる
+document.getElementById('closeMemo').addEventListener('click',()=>{memoModal.style.display='none';});
 
 // 前月・翌月
 document.getElementById('prevMonth').addEventListener('click',()=>{
-  currentMonth--;
-  if(currentMonth<0){ currentMonth=11; currentYear--; }
+  currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; }
   generateCalendar(currentYear,currentMonth);
 });
 document.getElementById('nextMonth').addEventListener('click',()=>{
-  currentMonth++;
-  if(currentMonth>11){ currentMonth=0; currentYear++; }
+  currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++; }
   generateCalendar(currentYear,currentMonth);
 });
 
 // メモ一覧表示
-function showMemoList(dateStr){
+function showMemoList(){
   memoList.innerHTML='';
   for(let key in localStorage){
     if(key.startsWith('memo-')){
       const val=localStorage.getItem(key);
-      const dateParts=key.replace('memo-','').split('-');
-      const y=Number(dateParts[0]), m=Number(dateParts[1]), d=Number(dateParts[2]);
+      const parts=key.replace('memo-','').split('-');
+      const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
       const weekday=getWeekday(y,m-1,d);
       const div=document.createElement('div');
       div.textContent=`${m}/${d}(${weekday}): ${val}`;
@@ -236,7 +231,7 @@ function showMemoList(dateStr){
       delBtn.className='deleteBtn';
       delBtn.addEventListener('click',()=>{
         localStorage.removeItem(key);
-        showMemoList(); // 再描画
+        showMemoList();
         generateCalendar(currentYear,currentMonth);
       });
       div.appendChild(delBtn);
@@ -246,10 +241,8 @@ function showMemoList(dateStr){
   memoListModal.style.display='flex';
 }
 
-// メモ一覧閉じる
-document.getElementById('closeMemoList').addEventListener('click',()=>{
-  memoListModal.style.display='none';
-});
+// 閉じる
+document.getElementById('closeMemoList').addEventListener('click',()=>{memoListModal.style.display='none';});
 
 // 初期表示
 generateCalendar(currentYear,currentMonth);
