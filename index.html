@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（完全版 改行対応済み）</title>
+<title>メモカレンダー（改行幅狭め版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -27,6 +27,12 @@ td:hover { background:#d4f0d4; }
 #memoListAlways div:hover { background:#e0e0e0; }
 .deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:6px 12px; font-size:16px; cursor:pointer; align-self:flex-end; margin-top:5px; }
 h4 { margin:10px 0 5px 0; }
+
+/* 改行幅を狭める */
+#memoListAlways div p {
+  margin: 2px 0;     /* 上下マージンを2pxに */
+  line-height: 1.2;  /* 行間を少し詰める */
+}
 </style>
 </head>
 <body>
