@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（複数選択リスト＋自由入力1行版）</title>
+<title>メモカレンダー（選択リスト＋自由入力版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -49,7 +49,7 @@ td:hover { background:#d4f0d4; }
   <div class="modal-content">
     <h3 id="memoDateTitle"></h3>
 
-    <!-- 4セット繰り返し -->
+    <!-- 4セットの選択リスト -->
     <div class="memo-set">
       <label>顧客リスト:</label>
       <select class="memoPresetLine" data-target="line1-1"><option value="">選択</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>H</option><option>I</option><option>J</option></select>
@@ -145,11 +145,10 @@ function generateCalendar(year,month){
       const weekday=getWeekday(year,month,day);
       memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
       const saved=JSON.parse(localStorage.getItem('memo-'+dateStr) || '{}');
-      // 選択リストは保存値で設定
       memoPresetLines.forEach(sel=>{
         sel.value = saved[sel.dataset.target] || '';
       });
-      document.getElementById('line5').value=saved.line5 || '';
+      document.getElementById('line5').value = saved.line5 || '';
       memoModal.style.display='flex';
     });
 
@@ -164,19 +163,12 @@ function generateCalendar(year,month){
   updateMemoListAlways();
 }
 
-// プルダウン変更で選択値をモーダルに保持
 memoPresetLines.forEach(sel=>{
   sel.addEventListener('change',()=>{
-    const targetId=sel.dataset.target;
-    if(sel.value){
-      sel.dataset.value = sel.value;
-    } else {
-      sel.dataset.value='';
-    }
+    // 選択値はvalueに直接保持
   });
 });
 
-// 保存
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={};
   memoPresetLines.forEach(sel=>{
@@ -191,10 +183,8 @@ document.getElementById('saveMemo').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-// 閉じる
 document.getElementById('closeMemo').addEventListener('click',()=>{memoModal.style.display='none';});
 
-// 前月・翌月
 document.getElementById('prevMonth').addEventListener('click',()=>{
   currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; }
   generateCalendar(currentYear,currentMonth);
@@ -204,7 +194,7 @@ document.getElementById('nextMonth').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-// 常時メモ一覧
+// 入力のあるものだけ表示
 function updateMemoListAlways(){
   memoListAlways.innerHTML='';
   const keys = Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
@@ -214,24 +204,39 @@ function updateMemoListAlways(){
     const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
     const weekday = getWeekday(y,m-1,d);
 
-    const div = document.createElement('div');
-    let text=`${m}/${d}(${weekday}): `;
-    for(let i=1;i<=4;i++){
-      text+=`顧客:${val['line'+i+'-1'] || ''} 行事:${val['line'+i+'-2'] || ''} 備考:${val['line'+i+'-3'] || ''}  `;
-    }
-    text+=`自由:${val.line5 || ''}`;
-    div.textContent=text;
+    let text = `${m}/${d}(${weekday}): `;
+    let hasValue = false;
 
-    const delBtn=document.createElement('button');
-    delBtn.textContent='削除';
-    delBtn.className='deleteBtn';
-    delBtn.addEventListener('click',()=>{
-      localStorage.removeItem(key);
-      updateMemoListAlways();
-      generateCalendar(currentYear,currentMonth);
-    });
-    div.appendChild(delBtn);
-    memoListAlways.appendChild(div);
+    for(let i=1;i<=4;i++){
+      const c = val['line'+i+'-1'] || '';
+      const e = val['line'+i+'-2'] || '';
+      const b = val['line'+i+'-3'] || '';
+      if(c || e || b){
+        hasValue = true;
+        text += `顧客:${c} 行事:${e} 備考:${b}  `;
+      }
+    }
+
+    if(val.line5){ 
+      hasValue = true;
+      text += `自由:${val.line5}`;
+    }
+
+    if(hasValue){
+      const div=document.createElement('div');
+      div.textContent=text;
+
+      const delBtn=document.createElement('button');
+      delBtn.textContent='削除';
+      delBtn.className='deleteBtn';
+      delBtn.addEventListener('click',()=>{
+        localStorage.removeItem(key);
+        updateMemoListAlways();
+        generateCalendar(currentYear,currentMonth);
+      });
+      div.appendChild(delBtn);
+      memoListAlways.appendChild(div);
+    }
   });
 }
 
