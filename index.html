@@ -58,7 +58,7 @@ td:hover { background:#d4f0d4; }
       <option value="G">G</option><option value="H">H</option><option value="I">I</option>
       <option value="J">J</option>
     </select>
-    <textarea id="line1" placeholder="自由入力も可能"></textarea>
+    <textarea id="line1" placeholder="自由入力不可"></textarea>
 
     <label>行事リスト:</label>
     <select class="memoPresetLine" data-target="line2">
@@ -68,7 +68,7 @@ td:hover { background:#d4f0d4; }
       <option value="G">G</option><option value="H">H</option><option value="I">I</option>
       <option value="J">J</option>
     </select>
-    <textarea id="line2" placeholder="自由入力も可能"></textarea>
+    <textarea id="line2" placeholder="自由入力不可"></textarea>
 
     <label>備考リスト:</label>
     <select class="memoPresetLine" data-target="line3">
@@ -78,10 +78,10 @@ td:hover { background:#d4f0d4; }
       <option value="G">G</option><option value="H">H</option><option value="I">I</option>
       <option value="J">J</option>
     </select>
-    <textarea id="line3" placeholder="自由入力も可能"></textarea>
+    <textarea id="line3" placeholder="自由入力不可"></textarea>
 
     <label>自由入力:</label>
-    <textarea id="line4" placeholder="自由入力を追加"></textarea>
+    <textarea id="line4" placeholder="ここは自由入力可能"></textarea>
 
     <div style="text-align:right;">
       <button id="saveMemo">保存</button>
@@ -159,12 +159,12 @@ function generateCalendar(year,month){
   updateMemoListAlways();
 }
 
-// プルダウン選択で対応テキスト欄に反映
+// プルダウン選択で対応テキスト欄に反映（line1～line3のみ）
 memoPresetLines.forEach(sel=>{
   sel.addEventListener('change',()=>{
     const targetId = sel.dataset.target;
-    if(sel.value){
-      document.getElementById(targetId).value = sel.value;
+    if(targetId !== 'line4'){ 
+      document.getElementById(targetId).value = sel.value || '';
     }
   });
 });
