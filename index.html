@@ -3,265 +3,258 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー</title>
-
+<title>メモカレンダー（〇付き・空白非表示・入力可能版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
-th, td { border:1px solid #ccc; width:40px; height:40px; text-align:center; cursor:pointer; position:relative; }
+th, td { border:1px solid #ccc; width:40px; height:40px; text-align:center; vertical-align:middle; cursor:pointer; position:relative; }
 th { background:#4CAF50; color:#fff; }
 td:hover { background:#d4f0d4; }
+.today { background:#FFEB3B; }
+.memo-mark { position:absolute; bottom:2px; right:2px; font-size:16px; color:red; font-weight:bold; }
 
-.memo-mark {
-  position:absolute;
-  bottom:2px;
-  right:2px;
-  color:red;
-  font-weight:bold;
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:450px; text-align:left; max-height:90%; overflow-y:auto; }
+.modal-content select, .modal-content textarea { width:100%; font-size:16px; margin-top:5px; margin-bottom:10px; }
+.modal-content textarea { height:60px; }
+.modal-content button { margin-top:10px; padding:8px 12px; font-size:16px; border:none; border-radius:5px; cursor:pointer; }
+#saveMemo { background:#4CAF50; color:#fff; }
+#closeMemo { background:#f44336; color:#fff; margin-left:10px; }
+#navButtons { margin-bottom:10px; }
+#navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
+#memoListAlways { 
+  margin-top:20px; 
+  text-align:left; 
+  max-width:600px; 
+  margin-left:auto; 
+  margin-right:auto; 
+  font-size:18px; 
 }
+#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; flex-direction:column; }
+#memoListAlways div:hover { background:#e0e0e0; }
+.deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:6px 12px; font-size:16px; cursor:pointer; align-self:flex-end; margin-top:5px; }
+h4 { margin:10px 0 5px 0; }
 
-/* ナビ */
-#navButtons button {
-  margin:0 10px;
-  padding:5px 10px;
-  font-size:16px;
-}
+/* 横並び用 */
+.lineContainer { display: flex; gap: 10px; margin-bottom: 5px; }
 
-/* モーダル */
-.modal {
-  display:none;
-  position:fixed;
-  width:100%; height:100%;
-  background:rgba(0,0,0,0.5);
-  justify-content:center;
-  align-items:center;
-}
-.modal-content {
-  background:#fff;
-  padding:20px;
-  border-radius:10px;
-  width:90%;
-  max-width:450px;
-  text-align:left;
-}
-
-/* 横並び */
-.lineContainer { display:flex; gap:10px; }
-
-select, textarea {
-  width:100%;
-  font-size:16px;
-  margin-bottom:10px;
-}
-textarea { height:50px; }
-
-/* 保存一覧 */
-#memoListAlways {
-  margin-top:20px;
-  max-width:600px;
-  margin-left:auto;
-  margin-right:auto;
-  text-align:left;
-}
-
-#memoListAlways div {
-  padding:5px;
-  border-bottom:1px solid #ccc;
-  display:flex;
-  flex-direction:column;
-}
-
+/* 保存メモ一覧の行間・文字サイズ調整 */
 #memoListAlways p {
-  margin:2px 0;
+  margin:0;
+  line-height:1.4;
 }
-
-.deleteBtn {
-  align-self:flex-end;
-  margin-top:5px;
+#memoListAlways strong {
+  display:block;
+  margin:0 0 2px 0;
+  font-size:20px;
 }
 </style>
 </head>
-
 <body>
 
 <h2 id="monthYear"></h2>
-
 <div id="navButtons">
-<button id="prevMonth">前月</button>
-<button id="nextMonth">翌月</button>
+  <button id="prevMonth">前月</button>
+  <button id="nextMonth">翌月</button>
 </div>
 
 <table>
-<thead>
-<tr>
-<th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
-</tr>
-</thead>
-<tbody id="calendarBody"></tbody>
+  <thead>
+    <tr>
+      <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
+    </tr>
+  </thead>
+  <tbody id="calendarBody"></tbody>
 </table>
 
 <!-- モーダル -->
 <div id="memoModal" class="modal">
-<div class="modal-content">
-<h3 id="memoDateTitle"></h3>
+  <div class="modal-content">
+    <h3 id="memoDateTitle"></h3>
 
-<!-- 予定1～4 -->
-<div>
-<h4>予定1</h4>
-<div class="lineContainer">
-<select class="memo" data-key="line1-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line1-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line1-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-</div>
+    <!-- 予定1～4 -->
+    <div class="memo-set" id="set1">
+      <h4>予定1</h4>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line1-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line1-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line1-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
+    </div>
 
-<h4>予定2</h4>
-<div class="lineContainer">
-<select class="memo" data-key="line2-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line2-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line2-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-</div>
+    <div class="memo-set" id="set2">
+      <h4>予定2</h4>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line2-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line2-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
+    </div>
 
-<h4>予定3</h4>
-<div class="lineContainer">
-<select class="memo" data-key="line3-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line3-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line3-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-</div>
+    <div class="memo-set" id="set3">
+      <h4>予定3</h4>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line3-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line3-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line3-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
+    </div>
 
-<h4>予定4</h4>
-<div class="lineContainer">
-<select class="memo" data-key="line4-1"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line4-2"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-<select class="memo" data-key="line4-3"><option value=""></option><option>A</option><option>B</option><option>C</option></select>
-</div>
-</div>
+    <div class="memo-set" id="set4">
+      <h4>予定4</h4>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line4-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line4-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line4-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
+    </div>
 
-<textarea id="line5" placeholder="自由入力"></textarea>
+    <textarea id="line5" placeholder="自由入力はこちら"></textarea>
 
-<button id="saveMemo">保存</button>
-<button id="closeMemo">閉じる</button>
-
-</div>
+    <div style="text-align:right;">
+      <button id="saveMemo">保存</button>
+      <button id="closeMemo">閉じる</button>
+    </div>
+  </div>
 </div>
 
 <h3>保存メモ一覧</h3>
 <div id="memoListAlways"></div>
 
 <script>
-const calendarBody=document.getElementById('calendarBody');
-const memoModal=document.getElementById('memoModal');
-const memoDateTitle=document.getElementById('memoDateTitle');
-const memoListAlways=document.getElementById('memoListAlways');
-const selects=document.querySelectorAll('.memo');
+const calendarBody = document.getElementById('calendarBody');
+const memoModal = document.getElementById('memoModal');
+const memoDateTitle = document.getElementById('memoDateTitle');
+const memoPresetLines = document.querySelectorAll('.memoPresetLine');
+const memoListAlways = document.getElementById('memoListAlways');
+const memoSets = [document.getElementById('set1'), document.getElementById('set2'), document.getElementById('set3'), document.getElementById('set4')];
 
-let y=new Date().getFullYear();
-let m=new Date().getMonth();
-let selectedKey='';
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let selectedDateStr = '';
 
-function pad2(n){return n.toString().padStart(2,'0');}
+function pad2(n){ return n.toString().padStart(2,'0'); }
+function getWeekday(y,m,d){ const w=['日','月','火','水','木','金','土']; return w[new Date(y,m,d).getDay()]; }
 
-function generateCalendar(){
-calendarBody.innerHTML='';
-const first=new Date(y,m,1);
-const last=new Date(y,m+1,0);
-let row=document.createElement('tr');
+function generateCalendar(year,month){
+  calendarBody.innerHTML='';
+  const firstDay=new Date(year,month,1);
+  const lastDay=new Date(year,month+1,0);
+  const startDay=firstDay.getDay();
+  const totalDays=lastDay.getDate();
+  let row=document.createElement('tr');
+  for(let i=0;i<startDay;i++) row.appendChild(document.createElement('td'));
+  for(let day=1;day<=totalDays;day++){
+    if(row.children.length===7){ calendarBody.appendChild(row); row=document.createElement('tr'); }
+    const cell=document.createElement('td');
+    cell.textContent=day;
+    const today=new Date();
+    if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()) cell.classList.add('today');
 
-for(let i=0;i<first.getDay();i++) row.appendChild(document.createElement('td'));
+    const correctKey = `memo-${pad2(year)}-${pad2(month+1)}-${pad2(day)}`;
 
-for(let d=1;d<=last.getDate();d++){
-if(row.children.length===7){calendarBody.appendChild(row);row=document.createElement('tr');}
+    const existingMark = cell.querySelector('.memo-mark');
+    if(existingMark) existingMark.remove();
+    if(localStorage.getItem(correctKey)){
+      const mark = document.createElement('span');
+      mark.textContent='●';
+      mark.className='memo-mark';
+      cell.appendChild(mark);
+    }
 
-const td=document.createElement('td');
-td.textContent=d;
+    cell.addEventListener('click',()=>{
+      selectedDateStr = correctKey;
+      const weekday=getWeekday(year,month,day);
+      memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
+      const saved=JSON.parse(localStorage.getItem(selectedDateStr)||'{}');
+      memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
+      memoSets.forEach((div,i)=>{ div.style.display='block'; });
+      document.getElementById('line5').value=saved.line5||'';
+      memoModal.style.display='flex';
+    });
+    row.appendChild(cell);
+  }
+  while(row.children.length<7) row.appendChild(document.createElement('td'));
+  calendarBody.appendChild(row);
 
-const key=`memo-${pad2(y)}-${pad2(m+1)}-${pad2(d)}`;
+  const monthNames=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+  document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
 
-if(localStorage.getItem(key)){
-const mark=document.createElement('span');
-mark.textContent='●';
-mark.className='memo-mark';
-td.appendChild(mark);
+  updateMemoListAlways();
 }
 
-td.onclick=()=>{
-selectedKey=key;
-memoDateTitle.textContent=`${m+1}/${d}`;
-const data=JSON.parse(localStorage.getItem(key)||'{}');
-
-selects.forEach(s=>s.value=data[s.dataset.key]||'');
-document.getElementById('line5').value=data.line5||'';
-
-memoModal.style.display='flex';
-};
-
-row.appendChild(td);
-}
-calendarBody.appendChild(row);
-
-document.getElementById('monthYear').textContent=`${y}年 ${m+1}月`;
-
-updateList();
-}
-
-document.getElementById('saveMemo').onclick=()=>{
-const obj={};
-selects.forEach(s=>obj[s.dataset.key]=s.value);
-obj.line5=document.getElementById('line5').value;
-
-if(Object.values(obj).some(v=>v)){
-localStorage.setItem(selectedKey,JSON.stringify(obj));
-}else{
-localStorage.removeItem(selectedKey);
-}
-
-memoModal.style.display='none';
-generateCalendar();
-};
-
-document.getElementById('closeMemo').onclick=()=>memoModal.style.display='none';
-
-document.getElementById('prevMonth').onclick=()=>{m--;if(m<0){m=11;y--;}generateCalendar();}
-document.getElementById('nextMonth').onclick=()=>{m++;if(m>11){m=0;y++;}generateCalendar();}
-
-function updateList(){
-memoListAlways.innerHTML='';
-
-Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort().forEach(k=>{
-const v=JSON.parse(localStorage.getItem(k));
-const div=document.createElement('div');
-
-const h=document.createElement('strong');
-h.textContent=k.replace('memo-','');
-div.appendChild(h);
-
-for(let i=1;i<=4;i++){
-const a=v[`line${i}-1`]||'';
-const b=v[`line${i}-2`]||'';
-const c=v[`line${i}-3`]||'';
-if(!a&&!b&&!c) continue;
-
-const p=document.createElement('p');
-p.textContent=`〇${a} ${b} ${c}`;
-div.appendChild(p);
-}
-
-if(v.line5){
-const p=document.createElement('p');
-p.textContent=v.line5;
-div.appendChild(p);
-}
-
-const btn=document.createElement('button');
-btn.textContent='削除';
-btn.className='deleteBtn';
-btn.onclick=()=>{localStorage.removeItem(k);generateCalendar();};
-
-div.appendChild(btn);
-memoListAlways.appendChild(div);
+memoPresetLines.forEach(sel=>{
+  sel.addEventListener('change',()=>{ document.getElementById(sel.dataset.target).value=sel.value; });
 });
+
+document.getElementById('saveMemo').addEventListener('click',()=>{
+  const obj={};
+  memoPresetLines.forEach(sel=>obj[sel.dataset.target]=sel.value);
+  obj.line5=document.getElementById('line5').value;
+  if(Object.values(obj).some(v=>v)) localStorage.setItem(selectedDateStr,JSON.stringify(obj));
+  else localStorage.removeItem(selectedDateStr);
+  memoModal.style.display='none';
+  generateCalendar(currentYear,currentMonth);
+});
+
+document.getElementById('closeMemo').addEventListener('click',()=>{ memoModal.style.display='none'; });
+document.getElementById('prevMonth').addEventListener('click',()=>{
+  currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; }
+  generateCalendar(currentYear,currentMonth);
+});
+document.getElementById('nextMonth').addEventListener('click',()=>{
+  currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++; }
+  generateCalendar(currentYear,currentMonth);
+});
+
+function updateMemoListAlways(){
+  memoListAlways.innerHTML='';
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
+  keys.forEach(key=>{
+    const val=JSON.parse(localStorage.getItem(key));
+    const parts=key.replace('memo-','').split('-');
+    const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
+    const weekday=getWeekday(y,m-1,d);
+
+    const div=document.createElement('div');
+    const header=document.createElement('strong');
+    header.textContent = `${m}/${d}(${weekday})`;
+    div.appendChild(header);
+
+    for(let i=1;i<=4;i++){
+      const c=val[`line${i}-1`]||'';
+      const e=val[`line${i}-2`]||'';
+      const b=val[`line${i}-3`]||'';
+      if(!c && !e && !b) continue;
+
+      const pContent=document.createElement('p');
+      pContent.textContent=`〇${c}　${e}　${b}`;
+      div.appendChild(pContent);
+    }
+
+    if(val.line5){
+      const pFree=document.createElement('p');
+      // CR+LF, LF, CR をすべて <br> に変換
+      pFree.innerHTML = val.line5.replace(/\r\n|\r|\n/g, '<br>');
+      div.appendChild(pFree);
+    }
+
+    const delBtn=document.createElement('button');
+    delBtn.textContent='削除';
+    delBtn.className='deleteBtn';
+    delBtn.addEventListener('click',()=>{
+      const correctKey = `memo-${pad2(y)}-${pad2(m)}-${pad2(d)}`;
+      localStorage.removeItem(correctKey);
+      updateMemoListAlways();
+      generateCalendar(currentYear,currentMonth);
+    });
+    div.appendChild(delBtn);
+
+    memoListAlways.appendChild(div);
+  });
 }
 
-generateCalendar();
+generateCalendar(currentYear,currentMonth);
 </script>
 
 </body>
