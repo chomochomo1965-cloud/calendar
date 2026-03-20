@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（改行幅狭め版）</title>
+<title>メモカレンダー（縦並び版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -23,15 +23,15 @@ td:hover { background:#d4f0d4; }
 #navButtons { margin-bottom:10px; }
 #navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
 #memoListAlways { margin-top:20px; text-align:left; max-width:600px; margin-left:auto; margin-right:auto; }
-#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; flex-direction:column; }
+#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:flex-start; flex-direction:column; }
 #memoListAlways div:hover { background:#e0e0e0; }
 .deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:6px 12px; font-size:16px; cursor:pointer; align-self:flex-end; margin-top:5px; }
 h4 { margin:10px 0 5px 0; }
 
 /* 改行幅を狭める */
 #memoListAlways div p {
-  margin: 2px 0;     /* 上下マージンを2pxに */
-  line-height: 1.2;  /* 行間を少し詰める */
+  margin: 2px 0;     
+  line-height: 1.2;  
 }
 </style>
 </head>
@@ -201,47 +201,49 @@ function updateMemoListAlways(){
     const parts=key.replace('memo-','').split('-');
     const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
     const weekday=getWeekday(y,m-1,d);
-    
-    let hasValue=false;
+
     const div=document.createElement('div');
+
+    // 日付タイトル
+    const header=document.createElement('strong');
+    header.textContent = `${m}/${d}(${weekday})`;
+    div.appendChild(header);
 
     for(let i=1;i<=4;i++){
       const c=val[`line${i}-1`]||'';
       const e=val[`line${i}-2`]||'';
       const b=val[`line${i}-3`]||'';
-      if(c || e || b){
-        hasValue=true;
-        const p=document.createElement('p');
-        p.textContent=`${i}: ${c} : ${e} : ${b}`;
-        div.appendChild(p);
-      }
+
+      // 予定名
+      const pName=document.createElement('p');
+      pName.textContent=`予定${i}`;
+      div.appendChild(pName);
+
+      // 予定内容（空白も表示）
+      const pContent=document.createElement('p');
+      pContent.textContent = `${c || '空白'}　${e || '空白'}　${b || '空白'}`;
+      div.appendChild(pContent);
     }
 
-    if(val.line5){
-      hasValue=true;
-      const p=document.createElement('p');
-      p.textContent=val.line5;
-      div.appendChild(p);
-    }
+    // 自由入力
+    const free = val.line5 || '';
+    const pFree=document.createElement('p');
+    pFree.textContent = free ? free : '自由入力はこちら';
+    div.appendChild(pFree);
 
-    if(hasValue){
-      const header=document.createElement('strong');
-      header.textContent = `${m}/${d}(${weekday}):`;
-      div.insertBefore(header, div.firstChild);
+    // 削除ボタン
+    const delBtn=document.createElement('button');
+    delBtn.textContent='削除';
+    delBtn.className='deleteBtn';
+    delBtn.addEventListener('click',()=>{
+      const correctKey = `memo-${pad2(y)}-${pad2(m)}-${pad2(d)}`;
+      localStorage.removeItem(correctKey);
+      updateMemoListAlways();
+      generateCalendar(currentYear,currentMonth);
+    });
+    div.appendChild(delBtn);
 
-      const delBtn=document.createElement('button');
-      delBtn.textContent='削除';
-      delBtn.className='deleteBtn';
-      delBtn.addEventListener('click',()=>{
-        const correctKey = `memo-${pad2(y)}-${pad2(m)}-${pad2(d)}`;
-        localStorage.removeItem(correctKey);
-        updateMemoListAlways();
-        generateCalendar(currentYear,currentMonth);
-      });
-      div.appendChild(delBtn);
-
-      memoListAlways.appendChild(div);
-    }
+    memoListAlways.appendChild(div);
   });
 }
 
