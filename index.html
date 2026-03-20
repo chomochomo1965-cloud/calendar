@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（完全版 修正対応済み）</title>
+<title>メモカレンダー（完全版 改行対応済み）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -134,7 +134,7 @@ function generateCalendar(year,month){
     }
 
     cell.addEventListener('click',()=>{
-      selectedDateStr = correctKey;  // ←クリックした日付をキーとして固定
+      selectedDateStr = correctKey;
       const weekday=getWeekday(year,month,day);
       memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
       const saved=JSON.parse(localStorage.getItem(selectedDateStr)||'{}');
@@ -195,18 +195,34 @@ function updateMemoListAlways(){
     const parts=key.replace('memo-','').split('-');
     const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
     const weekday=getWeekday(y,m-1,d);
+    
     let hasValue=false;
-    let text=`${m}/${d}(${weekday}):`;
+    const div=document.createElement('div');
+
     for(let i=1;i<=4;i++){
       const c=val[`line${i}-1`]||'';
       const e=val[`line${i}-2`]||'';
       const b=val[`line${i}-3`]||'';
-      if(c||e||b){ hasValue=true; text+=` ${c} :${e} :${b}`; }
+      if(c || e || b){
+        hasValue=true;
+        const p=document.createElement('p');
+        p.textContent=`予定${i}: ${c} : ${e} : ${b}`;
+        div.appendChild(p);
+      }
     }
-    if(val.line5){ hasValue=true; text+=` ${val.line5}`; }
+
+    if(val.line5){
+      hasValue=true;
+      const p=document.createElement('p');
+      p.textContent=val.line5;
+      div.appendChild(p);
+    }
+
     if(hasValue){
-      const div=document.createElement('div');
-      div.textContent=text;
+      const header=document.createElement('strong');
+      header.textContent = `${m}/${d}(${weekday}):`;
+      div.insertBefore(header, div.firstChild);
+
       const delBtn=document.createElement('button');
       delBtn.textContent='削除';
       delBtn.className='deleteBtn';
@@ -217,6 +233,7 @@ function updateMemoListAlways(){
         generateCalendar(currentYear,currentMonth);
       });
       div.appendChild(delBtn);
+
       memoListAlways.appendChild(div);
     }
   });
