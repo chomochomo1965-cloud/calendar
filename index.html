@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（赤マーク＆予定表示 完全版）</title>
+<title>メモカレンダー（完全版 修正対応済み）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -121,7 +121,6 @@ function generateCalendar(year,month){
     const today=new Date();
     if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()) cell.classList.add('today');
 
-    const dateStr=`${year}-${pad2(month+1)}-${pad2(day)}`;
     const correctKey = `memo-${pad2(year)}-${pad2(month+1)}-${pad2(day)}`;
 
     // 赤マーク削除＆再生成
@@ -135,14 +134,13 @@ function generateCalendar(year,month){
     }
 
     cell.addEventListener('click',()=>{
-      selectedDateStr=dateStr;
+      selectedDateStr = correctKey;  // ←クリックした日付をキーとして固定
       const weekday=getWeekday(year,month,day);
       memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
-      const saved=JSON.parse(localStorage.getItem(correctKey)||'{}');
+      const saved=JSON.parse(localStorage.getItem(selectedDateStr)||'{}');
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
       document.getElementById('line5').value=saved.line5||'';
 
-      // 予定セット表示：保存データがある場合は必ず表示
       memoSets.forEach((div,i)=>{
         const c=saved[`line${i+1}-1`]||'';
         const e=saved[`line${i+1}-2`]||'';
@@ -167,17 +165,13 @@ memoPresetLines.forEach(sel=>{
   sel.addEventListener('change',()=>{ document.getElementById(sel.dataset.target).value=sel.value; });
 });
 
-// 保存ボタン
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={};
   memoPresetLines.forEach(sel=>obj[sel.dataset.target]=sel.value);
   obj.line5=document.getElementById('line5').value;
 
-  const d=new Date(selectedDateStr);
-  const correctKey = `memo-${pad2(d.getFullYear())}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-
-  if(Object.values(obj).some(v=>v)) localStorage.setItem(correctKey,JSON.stringify(obj));
-  else localStorage.removeItem(correctKey);
+  if(Object.values(obj).some(v=>v)) localStorage.setItem(selectedDateStr,JSON.stringify(obj));
+  else localStorage.removeItem(selectedDateStr);
 
   memoModal.style.display='none';
   generateCalendar(currentYear,currentMonth);
@@ -228,7 +222,6 @@ function updateMemoListAlways(){
   });
 }
 
-// 初期表示
 generateCalendar(currentYear,currentMonth);
 </script>
 
