@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（空白非表示版 完全版）</title>
+<title>メモカレンダー（赤マーク削除対応 完全版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -107,7 +107,7 @@ function pad2(n){ return n.toString().padStart(2,'0'); }
 function getWeekday(y,m,d){ const w=['日','月','火','水','木','金','土']; return w[new Date(y,m,d).getDay()]; }
 
 function generateCalendar(year,month){
-  calendarBody.innerHTML=''; // 既存カレンダークリア
+  calendarBody.innerHTML=''; // カレンダー初期化
   const firstDay=new Date(year,month,1);
   const lastDay=new Date(year,month+1,0);
   const startDay=firstDay.getDay();
@@ -123,13 +123,13 @@ function generateCalendar(year,month){
 
     const dateStr=`${year}-${pad2(month+1)}-${pad2(day)}`;
 
-    // 赤マーク表示（既存マークは削除）
+    // 赤マーク削除＆再生成
     const existingMark = cell.querySelector('.memo-mark');
     if(existingMark) existingMark.remove();
     if(localStorage.getItem('memo-'+dateStr)){
       const mark = document.createElement('span');
-      mark.textContent = '●';
-      mark.className = 'memo-mark';
+      mark.textContent='●';
+      mark.className='memo-mark';
       cell.appendChild(mark);
     }
 
@@ -141,7 +141,6 @@ function generateCalendar(year,month){
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
       document.getElementById('line5').value=saved.line5||'';
 
-      // 予定セットの表示/非表示
       memoSets.forEach((div,i)=>{
         const savedExist = Object.keys(saved).length > 0;
         const c=saved[`line${i+1}-1`]||'';
@@ -163,7 +162,7 @@ function generateCalendar(year,month){
 }
 
 memoPresetLines.forEach(sel=>{
-  sel.addEventListener('change',()=>{ const t=sel.dataset.target; document.getElementById(t).value=sel.value; });
+  sel.addEventListener('change',()=>{ document.getElementById(sel.dataset.target).value=sel.value; });
 });
 
 document.getElementById('saveMemo').addEventListener('click',()=>{
@@ -210,9 +209,11 @@ function updateMemoListAlways(){
       delBtn.textContent='削除';
       delBtn.className='deleteBtn';
       delBtn.addEventListener('click',()=>{
-        localStorage.removeItem(key);
+        // keyをゼロ埋め形式に統一して削除
+        const correctKey = `memo-${pad2(y)}-${pad2(m)}-${pad2(d)}`;
+        localStorage.removeItem(correctKey);
         updateMemoListAlways();
-        generateCalendar(currentYear,currentMonth); // 再描画で赤マーク消える
+        generateCalendar(currentYear,currentMonth);
       });
       div.appendChild(delBtn);
       memoListAlways.appendChild(div);
