@@ -31,9 +31,15 @@ h4 { margin:10px 0 5px 0; }
 /* 横並び用 */
 .lineContainer { display: flex; gap: 10px; margin-bottom: 5px; }
 
-/* 保存メモ一覧の行間を狭くする */
-#memoListAlways p { margin: 2px 0; line-height: 1.2; }
-#memoListAlways strong { display:block; margin-bottom: 2px; }
+/* 保存メモ一覧の行間をさらに狭く */
+#memoListAlways p {
+  margin: 0;        /* 上下の余白をなくす */
+  line-height: 1;   /* 行間を詰める */
+}
+#memoListAlways strong {
+  display:block;
+  margin:0 0 2px 0; /* 上下の余白を最小化 */
+}
 </style>
 </head>
 <body>
@@ -155,11 +161,7 @@ function generateCalendar(year,month){
       const saved=JSON.parse(localStorage.getItem(selectedDateStr)||'{}');
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
 
-      // 予定1～4は常に表示（新規入力可能）
-      memoSets.forEach((div,i)=>{
-        div.style.display='block';
-      });
-
+      memoSets.forEach((div,i)=>{ div.style.display='block'; });
       document.getElementById('line5').value=saved.line5||'';
       memoModal.style.display='flex';
     });
@@ -216,10 +218,7 @@ function updateMemoListAlways(){
       const c=val[`line${i}-1`]||'';
       const e=val[`line${i}-2`]||'';
       const b=val[`line${i}-3`]||'';
-      if(!c && !e && !b) continue; // すべて空ならスキップ
-
-      const pName=document.createElement('p');
-      div.appendChild(pName);
+      if(!c && !e && !b) continue;
 
       const pContent=document.createElement('p');
       pContent.textContent=`〇${c}　${e}　${b}`;
