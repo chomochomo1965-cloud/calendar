@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（プルダウン対応）</title>
+<title>3行メモカレンダー</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -15,9 +15,9 @@ td:hover { background:#d4f0d4; }
 
 /* モーダル共通 */
 .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
-.modal-content { background:#fff; padding:20px; border-radius:10px; width:80%; max-width:350px; text-align:left; }
-.modal-content textarea, .modal-content select { width:100%; font-size:16px; margin-top:5px; margin-bottom:5px; }
-.modal-content textarea { height:100px; }
+.modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:400px; text-align:left; }
+.modal-content textarea, .modal-content select { width:100%; font-size:16px; margin-top:5px; margin-bottom:10px; }
+.modal-content textarea { height:50px; }
 .modal-content button { margin-top:10px; padding:8px 12px; font-size:16px; border:none; border-radius:5px; cursor:pointer; }
 #saveMemo { background:#4CAF50; color:#fff; }
 #closeMemo { background:#f44336; color:#fff; margin-left:10px; }
@@ -48,50 +48,37 @@ td:hover { background:#d4f0d4; }
 <div id="memoModal" class="modal">
   <div class="modal-content">
     <h3 id="memoDateTitle"></h3>
-    <select id="memoPreset">
-      <option value="">リストから選択</option>
 
-      <optgroup label="顧客リスト">
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-        <option value="D">D</option>
-        <option value="E">E</option>
-        <option value="F">F</option>
-        <option value="G">G</option>
-        <option value="H">H</option>
-        <option value="I">I</option>
-        <option value="J">J</option>
-      </optgroup>
-
-      <optgroup label="行事リスト">
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-        <option value="D">D</option>
-        <option value="E">E</option>
-        <option value="F">F</option>
-        <option value="G">G</option>
-        <option value="H">H</option>
-        <option value="I">I</option>
-        <option value="J">J</option>
-      </optgroup>
-
-      <optgroup label="備考リスト">
-        <option value="A">A</option>
-        <option value="B">B</option>
-        <option value="C">C</option>
-        <option value="D">D</option>
-        <option value="E">E</option>
-        <option value="F">F</option>
-        <option value="G">G</option>
-        <option value="H">H</option>
-        <option value="I">I</option>
-        <option value="J">J</option>
-      </optgroup>
-
+    <label>顧客リスト:</label>
+    <select class="memoPresetLine" data-target="line1">
+      <option value="">選択</option>
+      <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+      <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+      <option value="G">G</option><option value="H">H</option><option value="I">I</option>
+      <option value="J">J</option>
     </select>
-    <textarea id="memoText" placeholder="自由に入力もできます"></textarea>
+    <textarea id="line1" placeholder="自由入力も可能"></textarea>
+
+    <label>行事リスト:</label>
+    <select class="memoPresetLine" data-target="line2">
+      <option value="">選択</option>
+      <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+      <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+      <option value="G">G</option><option value="H">H</option><option value="I">I</option>
+      <option value="J">J</option>
+    </select>
+    <textarea id="line2" placeholder="自由入力も可能"></textarea>
+
+    <label>備考リスト:</label>
+    <select class="memoPresetLine" data-target="line3">
+      <option value="">選択</option>
+      <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+      <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+      <option value="G">G</option><option value="H">H</option><option value="I">I</option>
+      <option value="J">J</option>
+    </select>
+    <textarea id="line3" placeholder="自由入力も可能"></textarea>
+
     <div style="text-align:right;">
       <button id="saveMemo">保存</button>
       <button id="closeMemo">閉じる</button>
@@ -114,10 +101,9 @@ td:hover { background:#d4f0d4; }
 const calendarBody=document.getElementById('calendarBody');
 const memoModal=document.getElementById('memoModal');
 const memoDateTitle=document.getElementById('memoDateTitle');
-const memoText=document.getElementById('memoText');
-const memoPreset=document.getElementById('memoPreset');
-const memoListModal=document.getElementById('memoListModal');
-const memoList=document.getElementById('memoList');
+const memoPresetLines=document.querySelectorAll('.memoPresetLine');
+const memoListModal=document.getElementById('memoList');
+const memoListDiv=document.getElementById('memoList');
 
 let currentYear=new Date().getFullYear();
 let currentMonth=new Date().getMonth();
@@ -160,8 +146,11 @@ function generateCalendar(year,month){
       selectedDateStr=dateStr;
       const weekday=getWeekday(year,month,day);
       memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
-      memoText.value=localStorage.getItem('memo-'+dateStr) || '';
-      memoPreset.value='';
+      const saved=JSON.parse(localStorage.getItem('memo-'+dateStr) || '{}');
+      document.getElementById('line1').value=saved.line1 || '';
+      document.getElementById('line2').value=saved.line2 || '';
+      document.getElementById('line3').value=saved.line3 || '';
+      memoPresetLines.forEach(sel=>sel.value='');
       memoModal.style.display='flex';
     });
 
@@ -174,15 +163,25 @@ function generateCalendar(year,month){
   document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
 }
 
-// プルダウン選択でテキスト反映
-memoPreset.addEventListener('change',()=>{
-  if(memoPreset.value) memoText.value=memoPreset.value;
+// プルダウン選択で対応テキスト欄に反映
+memoPresetLines.forEach(sel=>{
+  sel.addEventListener('change',()=>{
+    const targetId = sel.dataset.target;
+    if(sel.value){
+      document.getElementById(targetId).value = sel.value;
+    }
+  });
 });
 
 // 保存
 document.getElementById('saveMemo').addEventListener('click',()=>{
-  if(memoText.value.trim()!==''){
-    localStorage.setItem('memo-'+selectedDateStr, memoText.value);
+  const obj={
+    line1: document.getElementById('line1').value,
+    line2: document.getElementById('line2').value,
+    line3: document.getElementById('line3').value
+  };
+  if(obj.line1 || obj.line2 || obj.line3){
+    localStorage.setItem('memo-'+selectedDateStr, JSON.stringify(obj));
   } else {
     localStorage.removeItem('memo-'+selectedDateStr);
   }
@@ -205,15 +204,18 @@ document.getElementById('nextMonth').addEventListener('click',()=>{
 
 // メモ一覧表示
 function showMemoList(){
-  memoList.innerHTML='';
+  memoListDiv.innerHTML='';
   for(let key in localStorage){
     if(key.startsWith('memo-')){
-      const val=localStorage.getItem(key);
+      const val=JSON.parse(localStorage.getItem(key));
       const parts=key.replace('memo-','').split('-');
       const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
       const weekday=getWeekday(y,m-1,d);
       const div=document.createElement('div');
-      div.textContent=`${m}/${d}(${weekday}): ${val}`;
+      div.innerHTML=`${m}/${d}(${weekday}):<br>
+        顧客: ${val.line1 || ''}<br>
+        行事: ${val.line2 || ''}<br>
+        備考: ${val.line3 || ''}`;
       const delBtn=document.createElement('button');
       delBtn.textContent='削除';
       delBtn.className='deleteBtn';
@@ -223,7 +225,7 @@ function showMemoList(){
         generateCalendar(currentYear,currentMonth);
       });
       div.appendChild(delBtn);
-      memoList.appendChild(div);
+      memoListDiv.appendChild(div);
     }
   }
   memoListModal.style.display='flex';
