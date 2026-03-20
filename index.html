@@ -3,72 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（リスト選択付き）</title>
+<title>メモカレンダー（プルダウン対応）</title>
 <style>
-body {
-  font-family: sans-serif;
-  text-align: center;
-  margin: 20px;
-  background: #f0f0f0;
-}
-table {
-  border-collapse: collapse;
-  margin: 0 auto;
-  background: #fff;
-}
-th, td {
-  border: 1px solid #ccc;
-  width: 40px;
-  height: 40px;
-  text-align: center;
-  vertical-align: middle;
-  cursor: pointer;
-  position: relative;
-}
-th {
-  background: #4CAF50;
-  color: #fff;
-}
-td:hover { background: #d4f0d4; }
-.today { background: #FFEB3B; }
-.memo-mark { position: absolute; bottom:2px; right:2px; font-size:12px; color:red; }
+body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
+table { border-collapse:collapse; margin:0 auto; background:#fff; }
+th, td { border:1px solid #ccc; width:40px; height:40px; text-align:center; vertical-align:middle; cursor:pointer; position:relative; }
+th { background:#4CAF50; color:#fff; }
+td:hover { background:#d4f0d4; }
+.today { background:#FFEB3B; }
+.memo-mark { position:absolute; bottom:2px; right:2px; font-size:12px; color:red; }
 
 /* モーダル共通 */
-.modal {
-  display: none;
-  position: fixed;
-  top:0; left:0;
-  width:100%; height:100%;
-  background: rgba(0,0,0,0.5);
-  justify-content: center;
-  align-items: center;
-}
-.modal-content {
-  background:#fff;
-  padding:20px;
-  border-radius:10px;
-  width: 80%;
-  max-width: 350px;
-  text-align:left;
-}
-.modal-content textarea, .modal-content select {
-  width: 100%;
-  font-size:16px;
-  margin-top:5px;
-  margin-bottom:5px;
-}
-.modal-content textarea { height: 100px; }
-.modal-content button {
-  margin-top: 10px;
-  padding: 8px 12px;
-  font-size: 16px;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-}
-#saveMemo { background: #4CAF50; color:#fff; }
-#closeMemo { background: #f44336; color:#fff; margin-left:10px; }
-#navButtons { margin-bottom: 10px; }
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:20px; border-radius:10px; width:80%; max-width:350px; text-align:left; }
+.modal-content textarea, .modal-content select { width:100%; font-size:16px; margin-top:5px; margin-bottom:5px; }
+.modal-content textarea { height:100px; }
+.modal-content button { margin-top:10px; padding:8px 12px; font-size:16px; border:none; border-radius:5px; cursor:pointer; }
+#saveMemo { background:#4CAF50; color:#fff; }
+#closeMemo { background:#f44336; color:#fff; margin-left:10px; }
+#navButtons { margin-bottom:10px; }
 #navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
 #memoList div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; align-items:center; }
 #memoList div:hover { background:#e0e0e0; }
@@ -97,11 +50,46 @@ td:hover { background: #d4f0d4; }
     <h3 id="memoDateTitle"></h3>
     <select id="memoPreset">
       <option value="">リストから選択</option>
-      <option value="買い物">買い物</option>
-      <option value="会議">会議</option>
-      <option value="運動">運動</option>
-      <option value="休暇">休暇</option>
-      <option value="その他">その他</option>
+
+      <optgroup label="顧客リスト">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+        <option value="E">E</option>
+        <option value="F">F</option>
+        <option value="G">G</option>
+        <option value="H">H</option>
+        <option value="I">I</option>
+        <option value="J">J</option>
+      </optgroup>
+
+      <optgroup label="行事リスト">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+        <option value="E">E</option>
+        <option value="F">F</option>
+        <option value="G">G</option>
+        <option value="H">H</option>
+        <option value="I">I</option>
+        <option value="J">J</option>
+      </optgroup>
+
+      <optgroup label="備考リスト">
+        <option value="A">A</option>
+        <option value="B">B</option>
+        <option value="C">C</option>
+        <option value="D">D</option>
+        <option value="E">E</option>
+        <option value="F">F</option>
+        <option value="G">G</option>
+        <option value="H">H</option>
+        <option value="I">I</option>
+        <option value="J">J</option>
+      </optgroup>
+
     </select>
     <textarea id="memoText" placeholder="自由に入力もできます"></textarea>
     <div style="text-align:right;">
@@ -186,7 +174,7 @@ function generateCalendar(year,month){
   document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
 }
 
-// プリセット選択でテキスト反映
+// プルダウン選択でテキスト反映
 memoPreset.addEventListener('change',()=>{
   if(memoPreset.value) memoText.value=memoPreset.value;
 });
@@ -241,7 +229,7 @@ function showMemoList(){
   memoListModal.style.display='flex';
 }
 
-// 閉じる
+// メモ一覧閉じる
 document.getElementById('closeMemoList').addEventListener('click',()=>{memoListModal.style.display='none';});
 
 // 初期表示
