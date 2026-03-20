@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（モーダル横並び版）</title>
+<title>メモカレンダー（モーダル横並び・コンパクト版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -33,6 +33,16 @@ h4 { margin:10px 0 5px 0; }
   display: flex;
   gap: 10px; /* セレクト間のスペース */
   margin-bottom: 5px;
+}
+
+/* --- 追加：保存メモ一覧の行間を狭くする --- */
+#memoListAlways p {
+  margin: 2px 0;
+  line-height: 1.2;
+}
+#memoListAlways strong {
+  display:block;
+  margin-bottom: 2px;
 }
 </style>
 </head>
@@ -200,7 +210,7 @@ document.getElementById('nextMonth').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-// --- 修正版：保存メモ一覧を縦方向に戻す ---
+// --- 保存メモ一覧（縦並び＋行間狭く）
 function updateMemoListAlways(){
   memoListAlways.innerHTML='';
   const keys=Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
@@ -215,7 +225,6 @@ function updateMemoListAlways(){
     header.textContent = `${m}/${d}(${weekday})`;
     div.appendChild(header);
 
-    // 予定1～4表示（縦方向）
     for(let i=1;i<=4;i++){
       const c=val[`line${i}-1`]||'空白';
       const e=val[`line${i}-2`]||'空白';
@@ -230,7 +239,6 @@ function updateMemoListAlways(){
       div.appendChild(pContent);
     }
 
-    // 自由入力 line5
     if(val.line5){
       const pFree=document.createElement('p');
       pFree.textContent = val.line5;
