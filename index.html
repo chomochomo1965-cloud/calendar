@@ -1,46 +1,95 @@
-<!-- モーダル入力部分 -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メモカレンダー（予定縦並び版）</title>
+<style>
+body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
+table { border-collapse:collapse; margin:0 auto; background:#fff; }
+th, td { border:1px solid #ccc; width:40px; height:40px; text-align:center; vertical-align:middle; cursor:pointer; position:relative; }
+th { background:#4CAF50; color:#fff; }
+td:hover { background:#d4f0d4; }
+.today { background:#FFEB3B; }
+.memo-mark { position:absolute; bottom:2px; right:2px; font-size:16px; color:red; font-weight:bold; }
+
+.modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
+.modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:450px; text-align:left; max-height:90%; overflow-y:auto; }
+.modal-content select, .modal-content textarea { width:100%; font-size:16px; margin-top:5px; margin-bottom:10px; }
+.modal-content textarea { height:40px; }
+.modal-content button { margin-top:10px; padding:8px 12px; font-size:16px; border:none; border-radius:5px; cursor:pointer; }
+#saveMemo { background:#4CAF50; color:#fff; }
+#closeMemo { background:#f44336; color:#fff; margin-left:10px; }
+#navButtons { margin-bottom:10px; }
+#navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
+#memoListAlways { margin-top:20px; text-align:left; max-width:600px; margin-left:auto; margin-right:auto; }
+#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; flex-direction:column; }
+#memoListAlways div:hover { background:#e0e0e0; }
+.deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:3px 6px; cursor:pointer; align-self:flex-end; margin-top:5px; }
+h4 { margin:10px 0 5px 0; }
+</style>
+</head>
+<body>
+
+<h2 id="monthYear"></h2>
+<div id="navButtons">
+  <button id="prevMonth">前月</button>
+  <button id="nextMonth">翌月</button>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
+    </tr>
+  </thead>
+  <tbody id="calendarBody"></tbody>
+</table>
+
+<!-- メモ入力モーダル -->
 <div id="memoModal" class="modal">
   <div class="modal-content">
     <h3 id="memoDateTitle"></h3>
 
+    <!-- 予定1〜4 -->
     <div class="memo-set">
       <h4>予定1</h4>
       <label>顧客リスト:</label>
-      <select class="memoPresetLine" data-target="line1-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line1-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>行事リスト:</label>
-      <select class="memoPresetLine" data-target="line1-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line1-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>備考リスト:</label>
-      <select class="memoPresetLine" data-target="line1-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line1-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
 
     <div class="memo-set">
       <h4>予定2</h4>
       <label>顧客リスト:</label>
-      <select class="memoPresetLine" data-target="line2-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line2-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>行事リスト:</label>
-      <select class="memoPresetLine" data-target="line2-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line2-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>備考リスト:</label>
-      <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
 
     <div class="memo-set">
       <h4>予定3</h4>
       <label>顧客リスト:</label>
-      <select class="memoPresetLine" data-target="line3-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line3-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>行事リスト:</label>
-      <select class="memoPresetLine" data-target="line3-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line3-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>備考リスト:</label>
-      <select class="memoPresetLine" data-target="line3-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line3-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
 
     <div class="memo-set">
       <h4>予定4</h4>
       <label>顧客リスト:</label>
-      <select class="memoPresetLine" data-target="line4-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line4-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>行事リスト:</label>
-      <select class="memoPresetLine" data-target="line4-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line4-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
       <label>備考リスト:</label>
-      <select class="memoPresetLine" data-target="line4-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select>
+      <select class="memoPresetLine" data-target="line4-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
 
     <h4>自由入力</h4>
@@ -52,3 +101,123 @@
     </div>
   </div>
 </div>
+
+<h3>保存メモ一覧</h3>
+<div id="memoListAlways"></div>
+
+<script>
+const calendarBody=document.getElementById('calendarBody');
+const memoModal=document.getElementById('memoModal');
+const memoDateTitle=document.getElementById('memoDateTitle');
+const memoPresetLines=document.querySelectorAll('.memoPresetLine');
+const memoListAlways=document.getElementById('memoListAlways');
+
+let currentYear=new Date().getFullYear();
+let currentMonth=new Date().getMonth();
+let selectedDateStr='';
+
+function pad2(n){ return n.toString().padStart(2,'0'); }
+function getWeekday(y,m,d){ const w=['日','月','火','水','木','金','土']; return w[new Date(y,m,d).getDay()]; }
+
+function generateCalendar(year,month){
+  calendarBody.innerHTML='';
+  const firstDay=new Date(year,month,1);
+  const lastDay=new Date(year,month+1,0);
+  const startDay=firstDay.getDay();
+  const totalDays=lastDay.getDate();
+  let row=document.createElement('tr');
+  for(let i=0;i<startDay;i++) row.appendChild(document.createElement('td'));
+
+  for(let day=1;day<=totalDays;day++){
+    if(row.children.length===7){ calendarBody.appendChild(row); row=document.createElement('tr'); }
+    const cell=document.createElement('td');
+    cell.textContent=day;
+    const today=new Date();
+    if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()) cell.classList.add('today');
+
+    const dateStr=`${year}-${pad2(month+1)}-${pad2(day)}`;
+    if(localStorage.getItem('memo-'+dateStr)){
+      const mark=document.createElement('span');
+      mark.textContent='●';
+      mark.className='memo-mark';
+      cell.appendChild(mark);
+    }
+
+    cell.addEventListener('click',()=>{
+      selectedDateStr=dateStr;
+      const weekday=getWeekday(year,month,day);
+      memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
+      const saved=JSON.parse(localStorage.getItem('memo-'+dateStr)||'{}');
+      memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
+      document.getElementById('line5').value=saved.line5||'';
+      memoModal.style.display='flex';
+    });
+    row.appendChild(cell);
+  }
+  while(row.children.length<7) row.appendChild(document.createElement('td'));
+  calendarBody.appendChild(row);
+
+  const monthNames=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+  document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
+
+  updateMemoListAlways();
+}
+
+// プルダウン選択で反映
+memoPresetLines.forEach(sel=>{
+  sel.addEventListener('change',()=>{ const t=sel.dataset.target; document.getElementById(t).value=sel.value; });
+});
+
+// 保存
+document.getElementById('saveMemo').addEventListener('click',()=>{
+  const obj={};
+  memoPresetLines.forEach(sel=>obj[sel.dataset.target]=sel.value);
+  obj.line5=document.getElementById('line5').value;
+  if(Object.values(obj).some(v=>v)) localStorage.setItem('memo-'+selectedDateStr,JSON.stringify(obj));
+  else localStorage.removeItem('memo-'+selectedDateStr);
+  memoModal.style.display='none';
+  generateCalendar(currentYear,currentMonth);
+});
+document.getElementById('closeMemo').addEventListener('click',()=>{memoModal.style.display='none';});
+document.getElementById('prevMonth').addEventListener('click',()=>{currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--; } generateCalendar(currentYear,currentMonth); });
+document.getElementById('nextMonth').addEventListener('click',()=>{currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++; } generateCalendar(currentYear,currentMonth); });
+
+// 常時メモ一覧表示
+function updateMemoListAlways(){
+  memoListAlways.innerHTML='';
+  const keys=Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
+  keys.forEach(key=>{
+    const val=JSON.parse(localStorage.getItem(key));
+    const parts=key.replace('memo-','').split('-');
+    const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
+    const weekday=getWeekday(y,m-1,d);
+    let hasValue=false;
+    let text=`${m}/${d}(${weekday}):`;
+
+    for(let i=1;i<=4;i++){
+      const c=val['line'+i+'-1']||'';
+      const e=val['line'+i+'-2']||'';
+      const b=val['line'+i+'-3']||'';
+      if(c||e||b){ hasValue=true; text+=` 顧客:${c} 行事:${e} 備考:${b}`; }
+    }
+    if(val.line5){ hasValue=true; text+=` 自由:${val.line5}`; }
+
+    if(hasValue){
+      const div=document.createElement('div');
+      div.textContent=text;
+      const delBtn=document.createElement('button');
+      delBtn.textContent='削除';
+      delBtn.className='deleteBtn';
+      delBtn.addEventListener('click',()=>{ localStorage.removeItem(key); updateMemoListAlways(); generateCalendar(currentYear,currentMonth); });
+      div.appendChild(delBtn);
+      memoListAlways.appendChild(div);
+    }
+  });
+}
+
+// 初期表示
+generateCalendar(currentYear,currentMonth);
+</script>
+
+</body>
+</html>
