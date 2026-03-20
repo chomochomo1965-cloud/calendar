@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>前月・翌月切替メモカレンダー</title>
+<style>
+body {
+  font-family: sans-serif;
+  text-align: center;
+  margin: 20px;
+  background: #f0f0f0;
+}
+table {
+  border-collapse: collapse;
+  margin: 0 auto;
+  background: #fff;
+}
+th, td {
+  border: 1px solid #ccc;
+  width: 40px;
+  height: 40px;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  position: relative;
+}
+th {
+  background: #4CAF50;
+  color: #fff;
+}
+td:hover {
+  background: #d4f0d4;
+}
+.today {
+  background: #FFEB3B;
+}
+.memo-mark {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 12px;
+  color: red;
+}
+/* モーダル */
+#memoModal {
+  display: none;
+  position: fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+#memoContent {
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  width: 80%;
+  max-width: 300px;
+  text-align:left;
+}
+#memoContent textarea {
+  width: 100%;
+  height: 100px;
+  font-size: 16px;
+}
+#memoContent button {
+  margin-top: 10px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+#saveMemo { background: #4CAF50; color:#fff; }
+#closeMemo { background: #f44336; color:#fff; margin-left:10px; }
+#navButtons {
+  margin-bottom: 10px;
+}
+#navButtons button {
+  margin: 0 10px;
+  padding: 5px 10px;
+  font-size: 16px;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+}
+#prevMonth { background:#2196F3; color:#fff; }
+#nextMonth { background:#2196F3; color:#fff; }
+</style>
+</head>
+<body>
+
+<h2 id="monthYear"></h2>
+<div id="navButtons">
+  <button id="prevMonth">前月</button>
+  <button id="nextMonth">翌月</button>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
+    </tr>
+  </thead>
+  <tbody id="calendarBody"></tbody>
+</table>
+
+<!-- モーダル -->
+<div id="memoModal">
+  <div id="memoContent">
+    <h3 id="memoDateTitle"></h3>
+    <textarea id="memoText"></textarea>
+    <div style="text-align:right;">
+      <button id="saveMemo">保存</button>
+      <button id="closeMemo">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let calendarBody = document.getElementById('calendarBody');
+let memoModal = document.getElementById('memoModal');
+let memoDateTitle = document.getElementById('memoDateTitle');
+let memoText = document.getElementById('memoText');
+
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let selectedDateStr = '';
+
+function generateCalendar(year, month){
+  calendarBody.innerHTML='';
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
+  const startDay = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+
+  let row=document.createElement('tr');
+  for(let i=0;i<startDay;i++){
+    row.appendChild(document.createElement('td'));
+  }
+
+  for(let day=1;day<=totalDays;day++){
+    if(row.children.length===7){
+      calendarBody.appendChild(row);
+      row=document.createElement('tr');
+    }
+    const cell=document.createElement('td');
+    cell.textContent=day;
+
+    // 今日ハイライト
+    const today=new Date();
+    if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()){
+      cell.classList.add('today');
+    }
+
+    const dateStr=`${year}-${month+1}-${day}`;
+    if(localStorage.getItem('memo-'+dateStr)){
+      const mark=document.createElement('span');
+      mark.textContent='●';
+      mark.className='memo-mark';
+      cell.appendChild(mark);
+    }
+
+    cell.addEventListener('click',()=>{
+      selectedDateStr=dateStr;
+      memoDateTitle.textContent=`${month+1}月${day}日`;
+      memoText.value=localStorage.getItem('memo-'+dateStr) || '';
+      memoModal.style.display='flex';
+    });
+
+    row.appendChild(cell);
+  }
+
+  while(row.children.length<7){
+    row.appendChild(document.createElement('td'));
+  }
+  calendarBody.appendChild(row);
+
+  const monthNames=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
+  document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
+}
+
+// モーダル保存
+document.getElementById('saveMemo').addEventListener('click',()=>{
+  localStorage.setItem('memo-'+selectedDateStr, memoText.value);
+  memoModal.style.display='none';
+  generateCalendar(currentYear, currentMonth);
+});
+
+// モーダル閉じる
+document.getElementById('closeMemo').addEventListener('click',()=>{
+  memoModal.style.display='none';
+});
+
+// 前月・翌月
+document.getElementById('prevMonth').addEventListener('click',()=>{
+  currentMonth--;
+  if(currentMonth<0){
+    currentMonth=11;
+    currentYear--;
+  }
+  generateCalendar(currentYear,currentMonth);
+});
+document.getElementById('nextMonth').addEventListener('click',()=>{
+  currentMonth++;
+  if(currentMonth>11){
+    currentMonth=0;
+    currentYear++;
+  }
+  generateCalendar(currentYear,currentMonth);
+});
+
+// 初期表示
+generateCalendar(currentYear,currentMonth);
+</script>
+
+</body>
+</html>
