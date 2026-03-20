@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（予定1・2のみ表示版）</title>
+<title>メモカレンダー（予定1～4 横並び版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -23,15 +23,15 @@ td:hover { background:#d4f0d4; }
 #navButtons { margin-bottom:10px; }
 #navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
 #memoListAlways { margin-top:20px; text-align:left; max-width:600px; margin-left:auto; margin-right:auto; }
-#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:flex-start; flex-direction:column; }
+#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; flex-direction:column; }
 #memoListAlways div:hover { background:#e0e0e0; }
 .deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:6px 12px; font-size:16px; cursor:pointer; align-self:flex-end; margin-top:5px; }
 h4 { margin:10px 0 5px 0; }
 
 /* 改行幅を狭める */
 #memoListAlways div p {
-  margin: 2px 0;     
-  line-height: 1.2;  
+  margin: 2px 0;
+  line-height: 1.2;
 }
 </style>
 </head>
@@ -57,6 +57,7 @@ h4 { margin:10px 0 5px 0; }
   <div class="modal-content">
     <h3 id="memoDateTitle"></h3>
 
+    <!-- 予定1～4 -->
     <div class="memo-set" id="set1">
       <h4>予定1</h4>
       <select class="memoPresetLine" data-target="line1-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
@@ -71,21 +72,19 @@ h4 { margin:10px 0 5px 0; }
       <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
 
-    <div class="memo-set" id="set3" style="display:none;">
+    <div class="memo-set" id="set3">
       <h4>予定3</h4>
-      <select class="memoPresetLine" data-target="line3-1"></select>
-      <select class="memoPresetLine" data-target="line3-2"></select>
-      <select class="memoPresetLine" data-target="line3-3"></select>
+      <select class="memoPresetLine" data-target="line3-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <select class="memoPresetLine" data-target="line3-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <select class="memoPresetLine" data-target="line3-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
 
-    <div class="memo-set" id="set4" style="display:none;">
+    <div class="memo-set" id="set4">
       <h4>予定4</h4>
-      <select class="memoPresetLine" data-target="line4-1"></select>
-      <select class="memoPresetLine" data-target="line4-2"></select>
-      <select class="memoPresetLine" data-target="line4-3"></select>
+      <select class="memoPresetLine" data-target="line4-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <select class="memoPresetLine" data-target="line4-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <select class="memoPresetLine" data-target="line4-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
-
-    <textarea id="line5" style="display:none;"></textarea>
 
     <div style="text-align:right;">
       <button id="saveMemo">保存</button>
@@ -103,7 +102,7 @@ const memoModal = document.getElementById('memoModal');
 const memoDateTitle = document.getElementById('memoDateTitle');
 const memoPresetLines = document.querySelectorAll('.memoPresetLine');
 const memoListAlways = document.getElementById('memoListAlways');
-const memoSets = [document.getElementById('set1'), document.getElementById('set2')];
+const memoSets = [document.getElementById('set1'), document.getElementById('set2'), document.getElementById('set3'), document.getElementById('set4')];
 
 let currentYear = new Date().getFullYear();
 let currentMonth = new Date().getMonth();
@@ -129,7 +128,6 @@ function generateCalendar(year,month){
 
     const correctKey = `memo-${pad2(year)}-${pad2(month+1)}-${pad2(day)}`;
 
-    // 赤マーク削除＆再生成
     const existingMark = cell.querySelector('.memo-mark');
     if(existingMark) existingMark.remove();
     if(localStorage.getItem(correctKey)){
@@ -173,10 +171,8 @@ memoPresetLines.forEach(sel=>{
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={};
   memoPresetLines.forEach(sel=>obj[sel.dataset.target]=sel.value);
-
   if(Object.values(obj).some(v=>v)) localStorage.setItem(selectedDateStr,JSON.stringify(obj));
   else localStorage.removeItem(selectedDateStr);
-
   memoModal.style.display='none';
   generateCalendar(currentYear,currentMonth);
 });
@@ -207,12 +203,11 @@ function updateMemoListAlways(){
     header.textContent = `${m}/${d}(${weekday})`;
     div.appendChild(header);
 
-    // 予定1～2のみ表示、内容が空白なら非表示
-    for(let i=1;i<=2;i++){
+    // 予定1～4を横並び表示
+    for(let i=1;i<=4;i++){
       const c=val[`line${i}-1`]||'';
       const e=val[`line${i}-2`]||'';
       const b=val[`line${i}-3`]||'';
-
       if(!c && !e && !b) continue;
 
       const pName=document.createElement('p');
@@ -221,13 +216,18 @@ function updateMemoListAlways(){
 
       const contentItems = [c,e,b].filter(v=>v);
       if(contentItems.length>0){
-        const pContent=document.createElement('p');
-        pContent.textContent = contentItems.join('　');
-        div.appendChild(pContent);
+        const container = document.createElement('div');
+        container.style.display='flex';
+        container.style.gap='10px';
+        contentItems.forEach(item=>{
+          const span = document.createElement('span');
+          span.textContent = item;
+          container.appendChild(span);
+        });
+        div.appendChild(container);
       }
     }
 
-    // 削除ボタン
     const delBtn=document.createElement('button');
     delBtn.textContent='削除';
     delBtn.className='deleteBtn';
