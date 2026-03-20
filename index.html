@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（予定1～4 横並び版）</title>
+<title>メモカレンダー（モーダル横並び版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -28,10 +28,11 @@ td:hover { background:#d4f0d4; }
 .deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:6px 12px; font-size:16px; cursor:pointer; align-self:flex-end; margin-top:5px; }
 h4 { margin:10px 0 5px 0; }
 
-/* 改行幅を狭める */
-#memoListAlways div p {
-  margin: 2px 0;
-  line-height: 1.2;
+/* 横並び用 */
+.lineContainer {
+  display: flex;
+  gap: 10px; /* セレクト間のスペース */
+  margin-bottom: 5px;
 }
 </style>
 </head>
@@ -60,31 +61,41 @@ h4 { margin:10px 0 5px 0; }
     <!-- 予定1～4 -->
     <div class="memo-set" id="set1">
       <h4>予定1</h4>
-      <select class="memoPresetLine" data-target="line1-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line1-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line1-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line1-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line1-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line1-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
     </div>
 
     <div class="memo-set" id="set2">
       <h4>予定2</h4>
-      <select class="memoPresetLine" data-target="line2-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line2-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line2-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line2-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
     </div>
 
     <div class="memo-set" id="set3">
       <h4>予定3</h4>
-      <select class="memoPresetLine" data-target="line3-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line3-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line3-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line3-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line3-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line3-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
     </div>
 
     <div class="memo-set" id="set4">
       <h4>予定4</h4>
-      <select class="memoPresetLine" data-target="line4-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line4-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-      <select class="memoPresetLine" data-target="line4-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <div class="lineContainer">
+        <select class="memoPresetLine" data-target="line4-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line4-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+        <select class="memoPresetLine" data-target="line4-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      </div>
     </div>
+
+    <textarea id="line5" placeholder="自由入力はこちら"></textarea>
 
     <div style="text-align:right;">
       <button id="saveMemo">保存</button>
@@ -97,6 +108,7 @@ h4 { margin:10px 0 5px 0; }
 <div id="memoListAlways"></div>
 
 <script>
+// --- ここからJSは元のまま ---
 const calendarBody = document.getElementById('calendarBody');
 const memoModal = document.getElementById('memoModal');
 const memoDateTitle = document.getElementById('memoDateTitle');
@@ -151,6 +163,7 @@ function generateCalendar(year,month){
         div.style.display = (c || e || b || Object.keys(saved).length === 0) ? 'block' : 'none';
       });
 
+      document.getElementById('line5').value=saved.line5||'';
       memoModal.style.display='flex';
     });
     row.appendChild(cell);
@@ -171,6 +184,7 @@ memoPresetLines.forEach(sel=>{
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={};
   memoPresetLines.forEach(sel=>obj[sel.dataset.target]=sel.value);
+  obj.line5=document.getElementById('line5').value;
   if(Object.values(obj).some(v=>v)) localStorage.setItem(selectedDateStr,JSON.stringify(obj));
   else localStorage.removeItem(selectedDateStr);
   memoModal.style.display='none';
@@ -197,13 +211,11 @@ function updateMemoListAlways(){
     const weekday=getWeekday(y,m-1,d);
 
     const div=document.createElement('div');
-
-    // 日付タイトル
     const header=document.createElement('strong');
     header.textContent = `${m}/${d}(${weekday})`;
     div.appendChild(header);
 
-    // 予定1～4を横並び表示
+    // 予定1～4表示（縦方向）
     for(let i=1;i<=4;i++){
       const c=val[`line${i}-1`]||'';
       const e=val[`line${i}-2`]||'';
