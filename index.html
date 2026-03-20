@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4行以上メモカレンダー</title>
+<title>メモカレンダー（常時一覧表示）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -11,7 +11,7 @@ th, td { border:1px solid #ccc; width:40px; height:40px; text-align:center; vert
 th { background:#4CAF50; color:#fff; }
 td:hover { background:#d4f0d4; }
 .today { background:#FFEB3B; }
-.memo-mark { position:absolute; bottom:2px; right:2px; font-size:12px; color:red; }
+.memo-mark { position:absolute; bottom:2px; right:2px; font-size:16px; color:red; font-weight:bold; }
 
 /* モーダル共通 */
 .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; }
@@ -23,9 +23,10 @@ td:hover { background:#d4f0d4; }
 #closeMemo { background:#f44336; color:#fff; margin-left:10px; }
 #navButtons { margin-bottom:10px; }
 #navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
-#memoList div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; align-items:flex-start; flex-direction:column; }
-#memoList div:hover { background:#e0e0e0; }
-.deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:3px 6px; cursor:pointer; margin-top:5px; }
+#memoListAlways { margin-top:20px; text-align:left; max-width:600px; margin-left:auto; margin-right:auto; }
+#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; align-items:flex-start; flex-direction:column; }
+#memoListAlways div:hover { background:#e0e0e0; }
+.deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:3px 6px; cursor:pointer; margin-top:5px; align-self:flex-end; }
 </style>
 </head>
 <body>
@@ -89,24 +90,16 @@ td:hover { background:#d4f0d4; }
   </div>
 </div>
 
-<!-- メモ一覧モーダル -->
-<div id="memoListModal" class="modal">
-  <div class="modal-content">
-    <h3>保存メモ一覧</h3>
-    <div id="memoList"></div>
-    <div style="text-align:right;">
-      <button id="closeMemoList">閉じる</button>
-    </div>
-  </div>
-</div>
+<!-- 常時表示メモ一覧 -->
+<h3>保存メモ一覧</h3>
+<div id="memoListAlways"></div>
 
 <script>
 const calendarBody=document.getElementById('calendarBody');
 const memoModal=document.getElementById('memoModal');
 const memoDateTitle=document.getElementById('memoDateTitle');
 const memoPresetLines=document.querySelectorAll('.memoPresetLine');
-const memoListModal=document.getElementById('memoListModal');
-const memoListDiv=document.getElementById('memoList');
+const memoListAlways=document.getElementById('memoListAlways');
 
 let currentYear=new Date().getFullYear();
 let currentMonth=new Date().getMonth();
@@ -138,10 +131,6 @@ function generateCalendar(year,month){
       const mark=document.createElement('span');
       mark.textContent='●';
       mark.className='memo-mark';
-      mark.addEventListener('click',(e)=>{
-        e.stopPropagation();
-        showMemoList();
-      });
       cell.appendChild(mark);
     }
 
@@ -165,6 +154,8 @@ function generateCalendar(year,month){
 
   const monthNames=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
   document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
+
+  updateMemoListAlways();
 }
 
 // プルダウン選択で対応テキスト欄に反映
@@ -207,38 +198,31 @@ document.getElementById('nextMonth').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-// メモ一覧表示
-function showMemoList(){
-  memoListDiv.innerHTML='';
-  for(let key in localStorage){
-    if(key.startsWith('memo-')){
-      const val=JSON.parse(localStorage.getItem(key));
-      const parts=key.replace('memo-','').split('-');
-      const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
-      const weekday=getWeekday(y,m-1,d);
-      const div=document.createElement('div');
-      div.innerHTML=`${m}/${d}(${weekday}):<br>
-        顧客: ${val.line1 || ''}<br>
-        行事: ${val.line2 || ''}<br>
-        備考: ${val.line3 || ''}<br>
-        自由入力: ${val.line4 || ''}`;
-      const delBtn=document.createElement('button');
-      delBtn.textContent='削除';
-      delBtn.className='deleteBtn';
-      delBtn.addEventListener('click',()=>{
-        localStorage.removeItem(key);
-        showMemoList();
-        generateCalendar(currentYear,currentMonth);
-      });
-      div.appendChild(delBtn);
-      memoListDiv.appendChild(div);
-    }
-  }
-  memoListModal.style.display='flex';
-}
+// 常時メモ一覧表示
+function updateMemoListAlways(){
+  memoListAlways.innerHTML='';
+  const keys = Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
+  keys.forEach(key=>{
+    const val = JSON.parse(localStorage.getItem(key));
+    const parts=key.replace('memo-','').split('-');
+    const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
+    const weekday = getWeekday(y,m-1,d);
 
-// メモ一覧閉じる
-document.getElementById('closeMemoList').addEventListener('click',()=>{memoListModal.style.display='none';});
+    const div = document.createElement('div');
+    div.innerHTML=`${m}/${d}(${weekday}): 顧客:${val.line1 || ''} 行事:${val.line2 || ''} 備考:${val.line3 || ''} 自由:${val.line4 || ''}`;
+
+    const delBtn=document.createElement('button');
+    delBtn.textContent='削除';
+    delBtn.className='deleteBtn';
+    delBtn.addEventListener('click',()=>{
+      localStorage.removeItem(key);
+      updateMemoListAlways();
+      generateCalendar(currentYear,currentMonth);
+    });
+    div.appendChild(delBtn);
+    memoListAlways.appendChild(div);
+  });
+}
 
 // 初期表示
 generateCalendar(currentYear,currentMonth);
