@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（選択リスト＋自由入力版）</title>
+<title>メモカレンダー（予定ごと表示版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -23,9 +23,9 @@ td:hover { background:#d4f0d4; }
 #navButtons { margin-bottom:10px; }
 #navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
 #memoListAlways { margin-top:20px; text-align:left; max-width:600px; margin-left:auto; margin-right:auto; }
-#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; align-items:flex-start; flex-direction:column; }
+#memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; flex-direction:column; }
 #memoListAlways div:hover { background:#e0e0e0; }
-.deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:3px 6px; cursor:pointer; margin-top:5px; align-self:flex-end; }
+.deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:3px 6px; cursor:pointer; align-self:flex-end; margin-top:5px; }
 </style>
 </head>
 <body>
@@ -49,7 +49,7 @@ td:hover { background:#d4f0d4; }
   <div class="modal-content">
     <h3 id="memoDateTitle"></h3>
 
-    <!-- 4セットの選択リスト -->
+    <!-- 予定1〜4 各セット -->
     <div class="memo-set">
       <label>顧客リスト:</label>
       <select class="memoPresetLine" data-target="line1-1"><option value="">選択</option><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option><option>F</option><option>G</option><option>H</option><option>I</option><option>J</option></select>
@@ -163,12 +163,6 @@ function generateCalendar(year,month){
   updateMemoListAlways();
 }
 
-memoPresetLines.forEach(sel=>{
-  sel.addEventListener('change',()=>{
-    // 選択値はvalueに直接保持
-  });
-});
-
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={};
   memoPresetLines.forEach(sel=>{
@@ -184,7 +178,6 @@ document.getElementById('saveMemo').addEventListener('click',()=>{
 });
 
 document.getElementById('closeMemo').addEventListener('click',()=>{memoModal.style.display='none';});
-
 document.getElementById('prevMonth').addEventListener('click',()=>{
   currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; }
   generateCalendar(currentYear,currentMonth);
@@ -194,7 +187,7 @@ document.getElementById('nextMonth').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-// 入力のあるものだけ表示
+// 常時メモ一覧：予定ごとに分けて空白は非表示
 function updateMemoListAlways(){
   memoListAlways.innerHTML='';
   const keys = Object.keys(localStorage).filter(k=>k.startsWith('memo-')).sort();
@@ -204,28 +197,23 @@ function updateMemoListAlways(){
     const y=Number(parts[0]), m=Number(parts[1]), d=Number(parts[2]);
     const weekday = getWeekday(y,m-1,d);
 
-    let text = `${m}/${d}(${weekday}): `;
-    let hasValue = false;
+    const div=document.createElement('div');
+    let hasValue=false;
+    let text=`${m}/${d}(${weekday}):`;
 
     for(let i=1;i<=4;i++){
-      const c = val['line'+i+'-1'] || '';
-      const e = val['line'+i+'-2'] || '';
-      const b = val['line'+i+'-3'] || '';
-      if(c || e || b){
-        hasValue = true;
-        text += `顧客:${c} 行事:${e} 備考:${b}  `;
+      const c = val['line'+i+'-1']||'';
+      const e = val['line'+i+'-2']||'';
+      const b = val['line'+i+'-3']||'';
+      if(c||e||b){
+        hasValue=true;
+        text+=` 顧客:${c} 行事:${e} 備考:${b}`;
       }
     }
-
-    if(val.line5){ 
-      hasValue = true;
-      text += `自由:${val.line5}`;
-    }
+    if(val.line5){ hasValue=true; text+=` 自由:${val.line5}`; }
 
     if(hasValue){
-      const div=document.createElement('div');
       div.textContent=text;
-
       const delBtn=document.createElement('button');
       delBtn.textContent='削除';
       delBtn.className='deleteBtn';
