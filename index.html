@@ -107,7 +107,7 @@ function pad2(n){ return n.toString().padStart(2,'0'); }
 function getWeekday(y,m,d){ const w=['日','月','火','水','木','金','土']; return w[new Date(y,m,d).getDay()]; }
 
 function generateCalendar(year,month){
-  calendarBody.innerHTML=''; // カレンダー初期化
+  calendarBody.innerHTML='';
   const firstDay=new Date(year,month,1);
   const lastDay=new Date(year,month+1,0);
   const startDay=firstDay.getDay();
@@ -126,7 +126,8 @@ function generateCalendar(year,month){
     // 赤マーク削除＆再生成
     const existingMark = cell.querySelector('.memo-mark');
     if(existingMark) existingMark.remove();
-    if(localStorage.getItem('memo-'+dateStr)){
+    const correctKey = `memo-${pad2(year)}-${pad2(month+1)}-${pad2(day)}`;
+    if(localStorage.getItem(correctKey)){
       const mark = document.createElement('span');
       mark.textContent='●';
       mark.className='memo-mark';
@@ -137,7 +138,7 @@ function generateCalendar(year,month){
       selectedDateStr=dateStr;
       const weekday=getWeekday(year,month,day);
       memoDateTitle.textContent=`${month+1}月${day}日(${weekday})`;
-      const saved=JSON.parse(localStorage.getItem('memo-'+dateStr)||'{}');
+      const saved=JSON.parse(localStorage.getItem(correctKey)||'{}');
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
       document.getElementById('line5').value=saved.line5||'';
 
@@ -165,12 +166,18 @@ memoPresetLines.forEach(sel=>{
   sel.addEventListener('change',()=>{ document.getElementById(sel.dataset.target).value=sel.value; });
 });
 
+// 保存ボタン 修正版
 document.getElementById('saveMemo').addEventListener('click',()=>{
   const obj={};
   memoPresetLines.forEach(sel=>obj[sel.dataset.target]=sel.value);
   obj.line5=document.getElementById('line5').value;
-  if(Object.values(obj).some(v=>v)) localStorage.setItem('memo-'+selectedDateStr,JSON.stringify(obj));
-  else localStorage.removeItem('memo-'+selectedDateStr);
+
+  const d=new Date(selectedDateStr);
+  const correctKey = `memo-${pad2(d.getFullYear())}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+  if(Object.values(obj).some(v=>v)) localStorage.setItem(correctKey,JSON.stringify(obj));
+  else localStorage.removeItem(correctKey);
+
   memoModal.style.display='none';
   generateCalendar(currentYear,currentMonth);
 });
@@ -209,7 +216,6 @@ function updateMemoListAlways(){
       delBtn.textContent='削除';
       delBtn.className='deleteBtn';
       delBtn.addEventListener('click',()=>{
-        // keyをゼロ埋め形式に統一して削除
         const correctKey = `memo-${pad2(y)}-${pad2(m)}-${pad2(d)}`;
         localStorage.removeItem(correctKey);
         updateMemoListAlways();
