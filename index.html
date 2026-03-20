@@ -51,7 +51,6 @@ h4 { margin:10px 0 5px 0; }
   <div class="modal-content">
     <h3 id="memoDateTitle"></h3>
 
-    <!-- 予定1〜4 -->
     <div class="memo-set" id="set1">
       <h4>予定1</h4>
       <select class="memoPresetLine" data-target="line1-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
@@ -61,9 +60,9 @@ h4 { margin:10px 0 5px 0; }
 
     <div class="memo-set" id="set2">
       <h4>予定2</h4>
-       <select class="memoPresetLine" data-target="line2-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-       <select class="memoPresetLine" data-target="line2-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
-       <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <select class="memoPresetLine" data-target="line2-1"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <select class="memoPresetLine" data-target="line2-2"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
+      <select class="memoPresetLine" data-target="line2-3"><option value="">空白</option><option>A</option><option>B</option><option>C</option></select>
     </div>
 
     <div class="memo-set" id="set3">
@@ -93,22 +92,22 @@ h4 { margin:10px 0 5px 0; }
 <div id="memoListAlways"></div>
 
 <script>
-const calendarBody=document.getElementById('calendarBody');
-const memoModal=document.getElementById('memoModal');
-const memoDateTitle=document.getElementById('memoDateTitle');
-const memoPresetLines=document.querySelectorAll('.memoPresetLine');
-const memoListAlways=document.getElementById('memoListAlways');
-const memoSets=[document.getElementById('set1'),document.getElementById('set2'),document.getElementById('set3'),document.getElementById('set4')];
+const calendarBody = document.getElementById('calendarBody');
+const memoModal = document.getElementById('memoModal');
+const memoDateTitle = document.getElementById('memoDateTitle');
+const memoPresetLines = document.querySelectorAll('.memoPresetLine');
+const memoListAlways = document.getElementById('memoListAlways');
+const memoSets = [document.getElementById('set1'), document.getElementById('set2'), document.getElementById('set3'), document.getElementById('set4')];
 
-let currentYear=new Date().getFullYear();
-let currentMonth=new Date().getMonth();
-let selectedDateStr='';
+let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let selectedDateStr = '';
 
 function pad2(n){ return n.toString().padStart(2,'0'); }
 function getWeekday(y,m,d){ const w=['日','月','火','水','木','金','土']; return w[new Date(y,m,d).getDay()]; }
 
 function generateCalendar(year,month){
-  calendarBody.innerHTML='';
+  calendarBody.innerHTML=''; // 既存カレンダークリア
   const firstDay=new Date(year,month,1);
   const lastDay=new Date(year,month+1,0);
   const startDay=firstDay.getDay();
@@ -121,13 +120,19 @@ function generateCalendar(year,month){
     cell.textContent=day;
     const today=new Date();
     if(year===today.getFullYear() && month===today.getMonth() && day===today.getDate()) cell.classList.add('today');
+
     const dateStr=`${year}-${pad2(month+1)}-${pad2(day)}`;
+
+    // 赤マーク表示（既存マークは削除）
+    const existingMark = cell.querySelector('.memo-mark');
+    if(existingMark) existingMark.remove();
     if(localStorage.getItem('memo-'+dateStr)){
-      const mark=document.createElement('span');
-      mark.textContent='●';
-      mark.className='memo-mark';
+      const mark = document.createElement('span');
+      mark.textContent = '●';
+      mark.className = 'memo-mark';
       cell.appendChild(mark);
     }
+
     cell.addEventListener('click',()=>{
       selectedDateStr=dateStr;
       const weekday=getWeekday(year,month,day);
@@ -135,7 +140,8 @@ function generateCalendar(year,month){
       const saved=JSON.parse(localStorage.getItem('memo-'+dateStr)||'{}');
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
       document.getElementById('line5').value=saved.line5||'';
-      // 修正: 初回でもすべて表示、保存済みがあれば空のセットは非表示
+
+      // 予定セットの表示/非表示
       memoSets.forEach((div,i)=>{
         const savedExist = Object.keys(saved).length > 0;
         const c=saved[`line${i+1}-1`]||'';
@@ -149,8 +155,10 @@ function generateCalendar(year,month){
   }
   while(row.children.length<7) row.appendChild(document.createElement('td'));
   calendarBody.appendChild(row);
+
   const monthNames=["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"];
   document.getElementById('monthYear').textContent=`${year}年 ${monthNames[month]}`;
+
   updateMemoListAlways();
 }
 
@@ -168,9 +176,15 @@ document.getElementById('saveMemo').addEventListener('click',()=>{
   generateCalendar(currentYear,currentMonth);
 });
 
-document.getElementById('closeMemo').addEventListener('click',()=>{memoModal.style.display='none';});
-document.getElementById('prevMonth').addEventListener('click',()=>{currentMonth--; if(currentMonth<0){currentMonth=11; currentYear--; } generateCalendar(currentYear,currentMonth); });
-document.getElementById('nextMonth').addEventListener('click',()=>{currentMonth++; if(currentMonth>11){currentMonth=0; currentYear++; } generateCalendar(currentYear,currentMonth); });
+document.getElementById('closeMemo').addEventListener('click',()=>{ memoModal.style.display='none'; });
+document.getElementById('prevMonth').addEventListener('click',()=>{
+  currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; }
+  generateCalendar(currentYear,currentMonth);
+});
+document.getElementById('nextMonth').addEventListener('click',()=>{
+  currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++; }
+  generateCalendar(currentYear,currentMonth);
+});
 
 function updateMemoListAlways(){
   memoListAlways.innerHTML='';
@@ -195,7 +209,11 @@ function updateMemoListAlways(){
       const delBtn=document.createElement('button');
       delBtn.textContent='削除';
       delBtn.className='deleteBtn';
-      delBtn.addEventListener('click',()=>{ localStorage.removeItem(key); updateMemoListAlways(); generateCalendar(currentYear,currentMonth); });
+      delBtn.addEventListener('click',()=>{
+        localStorage.removeItem(key);
+        updateMemoListAlways();
+        generateCalendar(currentYear,currentMonth); // 再描画で赤マーク消える
+      });
       div.appendChild(delBtn);
       memoListAlways.appendChild(div);
     }
