@@ -22,7 +22,14 @@ td:hover { background:#d4f0d4; }
 #closeMemo { background:#f44336; color:#fff; margin-left:10px; }
 #navButtons { margin-bottom:10px; }
 #navButtons button { margin:0 10px; padding:5px 10px; font-size:16px; border:none; border-radius:5px; cursor:pointer; background:#2196F3; color:#fff; }
-#memoListAlways { margin-top:20px; text-align:left; max-width:600px; margin-left:auto; margin-right:auto; }
+#memoListAlways { 
+  margin-top:20px; 
+  text-align:left; 
+  max-width:600px; 
+  margin-left:auto; 
+  margin-right:auto; 
+  font-size:18px;  /* 文字サイズ大きく */
+}
 #memoListAlways div { padding:5px 10px; border-bottom:1px solid #ccc; display:flex; flex-direction:column; }
 #memoListAlways div:hover { background:#e0e0e0; }
 .deleteBtn { background:#f44336; color:#fff; border:none; border-radius:5px; padding:6px 12px; font-size:16px; cursor:pointer; align-self:flex-end; margin-top:5px; }
@@ -31,14 +38,15 @@ h4 { margin:10px 0 5px 0; }
 /* 横並び用 */
 .lineContainer { display: flex; gap: 10px; margin-bottom: 5px; }
 
-/* 保存メモ一覧の行間をさらに狭く */
+/* 保存メモ一覧の行間・文字サイズ調整 */
 #memoListAlways p {
-  margin: 0;        /* 上下の余白をなくす */
-  line-height: 1;   /* 行間を詰める */
+  margin:0;
+  line-height:1.2; /* 行間を狭く維持 */
 }
 #memoListAlways strong {
   display:block;
-  margin:0 0 2px 0; /* 上下の余白を最小化 */
+  margin:0 0 2px 0;
+  font-size:20px; /* 日付部分も大きめ */
 }
 </style>
 </head>
