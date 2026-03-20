@@ -186,9 +186,9 @@ function updateMemoListAlways(){
       const c=val[`line${i}-1`]||'';
       const e=val[`line${i}-2`]||'';
       const b=val[`line${i}-3`]||'';
-      if(c||e||b){ hasValue=true; text+=` :${c} :${e} :${b}`; }
+      if(c||e||b){ hasValue=true; text+=` ${c} :${e} :${b}`; }
     }
-    if(val.line5){ hasValue=true; text+=` :${val.line5}`; }
+    if(val.line5){ hasValue=true; text+=` ${val.line5}`; }
     if(hasValue){
       const div=document.createElement('div');
       div.textContent=text;
