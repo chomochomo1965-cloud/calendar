@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>メモカレンダー（空白非表示版）</title>
+<title>メモカレンダー（空白非表示版 完全版）</title>
 <style>
 body { font-family: sans-serif; text-align:center; margin:20px; background:#f0f0f0; }
 table { border-collapse:collapse; margin:0 auto; background:#fff; }
@@ -148,12 +148,13 @@ function generateCalendar(year,month){
       const saved=JSON.parse(localStorage.getItem('memo-'+dateStr)||'{}');
       memoPresetLines.forEach(sel=>sel.value=saved[sel.dataset.target]||'');
       document.getElementById('line5').value=saved.line5||'';
-      // 空白セットは非表示
+      // 修正: 初回でもすべて表示、保存済みがあれば空のセットは非表示
       memoSets.forEach((div,i)=>{
+        const savedExist = Object.keys(saved).length > 0;
         const c=saved[`line${i+1}-1`]||'';
         const e=saved[`line${i+1}-2`]||'';
         const b=saved[`line${i+1}-3`]||'';
-        div.style.display=(c||e||b) ? 'block' : 'none';
+        div.style.display = savedExist ? ((c||e||b) ? 'block' : 'none') : 'block';
       });
       memoModal.style.display='flex';
     });
@@ -217,5 +218,6 @@ function updateMemoListAlways(){
 // 初期表示
 generateCalendar(currentYear,currentMonth);
 </script>
+
 </body>
 </html>
